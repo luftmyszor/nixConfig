@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+set -e
+
+# Repo root: use PWD in nix-shell
+REPO_ROOT="$PWD"
+TEMPLATE_DIR="/etc/nixos/templates"
+
+MODULE_PATH="$1"
+
+if [[ "$MODULE_PATH" == "--help" || -z "$MODULE_PATH" ]]; then
+    cat <<EOF
+Usage: gen-module <category.path>
+Example:
+  gen-module services.swww
+  gen-module shells.zsh
+This will create /etc/nixos/modules/<category>/<sub>/<module>/ with options.nix, home.nix, system.nix
+EOF
+    exit 0
+fi
+
+# Split path into components
+IFS='.' read -ra PARTS <<< "$MODULE_PATH"
+MODULE_NAME="${PARTS[-1]}"
+CATEGORY_PATH=$(IFS=/; echo "${PARTS[*]}")
+MODULE_DIR="/etc/nixos/modules/$CATEGORY_PATH"
+
+if [[ -d "$MODULE_DIR" ]]; then
+    echo "Error: Module '$MODULE_NAME' already exists at $MODULE_DIR"
+    exit 1
+fi
+
+# Preview
+echo "Preview of files to be created in $MODULE_DIR:"
+for tmpl in "$TEMPLATE_DIR"/*-template.nix; do
+    file=$(basename "$tmpl" "-template.nix").nix
+    echo "  $MODULE_DIR/$file"
+done
+
+# Confirm
+read -rp "Create module '$MODULE_NAME' in '$MODULE_DIR'? [y/N]: " CONFIRM
+if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
+    echo "Aborted."
+    exit 0
+fi
+
+# Create directory
+echo "Creating module '$MODULE_NAME' at $MODULE_DIR ..."
+sudo mkdir -p "$MODULE_DIR"
+
+# Copy templates with substitutions
+for tmpl in "$TEMPLATE_DIR"/*-template.nix; do
+    file=$(basename "$tmpl" "-template.nix").nix
+    sudo sed \
+        -e "s|{{name}}|$MODULE_NAME|g" \
+        -e "s|{{path}}|$MODULE_PATH|g" \
+        "$tmpl" | sudo tee "$MODULE_DIR/$file" > /dev/null
+done
+
+echo "Module '$MODULE_NAME' created successfully."
+
