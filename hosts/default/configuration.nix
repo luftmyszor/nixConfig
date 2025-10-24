@@ -96,6 +96,8 @@ in
   inkscape-with-extensions
   gh
   git
+  vim
+  jq
   ];
 
   modules.shells.zsh.enable = true;
