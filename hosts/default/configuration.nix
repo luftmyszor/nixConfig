@@ -97,7 +97,7 @@ in
   gh
   git
   vim
-  jq
+  jq 
   ];
 
   modules.shells.zsh.enable = true;
