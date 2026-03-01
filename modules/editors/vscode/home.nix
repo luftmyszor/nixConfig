@@ -22,6 +22,12 @@ lib.mkIf cfg.enable {
       bbenoist.nix
       jnoortheen.nix-ide
 
+      # C++ extentions
+      ms-vscode.cpptools
+
+      # C# extentions
+      ms-dotnettools.csharp
+
       # Qml extentions
 
     ]
