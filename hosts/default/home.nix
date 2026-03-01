@@ -64,6 +64,8 @@ in
   modules.services.wofi.enable = true;
   modules.services.swww.enable = true;
 
+  modules.editors.vscode.enable = true;
+
   home.file.".palette/palette.json".text = 
     builtins.toJSON palette;
 }

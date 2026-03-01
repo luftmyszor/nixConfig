@@ -10,7 +10,8 @@
     };
   };
 
-  outputs = { self, nixpkgs, ... }@inputs:
+  outputs =
+    { self, nixpkgs, ... }@inputs:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
@@ -18,29 +19,32 @@
       shell = name: import ./dev-shells/${name}.nix { inherit pkgs; };
     in
     {
-    nixosConfigurations.luftmyszor = nixpkgs.lib.nixosSystem {
-      specialArgs = {
-        inherit inputs;
-	inherit palette;
+      nixosConfigurations.luftmyszor = nixpkgs.lib.nixosSystem {
+        specialArgs = {
+          inherit inputs;
+          inherit palette;
+        };
+        modules = [
+          ./hosts/default/configuration.nix
+          inputs.home-manager.nixosModules.default
+          {
+            home-manager.users.luftmyszor = {
+              imports = [ ./hosts/default/home.nix ];
+            };
+
+            home-manager.extraSpecialArgs = { inherit palette; };
+          }
+        ];
       };
-      modules = [
-        ./hosts/default/configuration.nix
-        inputs.home-manager.nixosModules.default
-        {
-          home-manager.users.luftmyszor = {
-	  imports = [ ./hosts/default/home.nix ];
-	  };
 
-	  home-manager.extraSpecialArgs = { inherit palette; };
-	}
-      ];
+      devShells.${system} = {
+        nix = shell "nix";
+        python = shell "python";
+        cpp = shell "cpp";
+        nodejs = shell "nodejs";
+        node = shell "nodejs";
+        js = shell "nodejs";
+
+      };
     };
-
-
-    devShells.${system} = {
-      nix = shell "nix";
-      python = shell "python";
-      cpp = shell "cpp";
-    };
-  };
 }
