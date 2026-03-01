@@ -36,15 +36,11 @@
           }
         ];
       };
-
-      devShells.${system} = {
-        nix = shell "nix";
-        python = shell "python";
-        cpp = shell "cpp";
-        nodejs = shell "nodejs";
-        node = shell "nodejs";
-        js = shell "nodejs";
-
-      };
+      
+    devShells.${system} = {
+      nix = shell "nix";
+      python = shell "python";
+      cpp = shell "cpp";
+      csharp = shell "csharp";
     };
 }
