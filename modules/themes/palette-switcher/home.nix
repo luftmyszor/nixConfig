@@ -13,10 +13,74 @@ let
     description = "Catppuccin Mocha-inspired palette";
   };
 
+  # ── palette-wallpaper script ──────────────────────────────────────────────
+  # Takes a PNG file, applies a top-to-bottom gradient (primary→secondary) to
+  # all non-transparent pixels, and fills transparent pixels with the bg color.
+  # Reads the active palette from ~/.config/palettes/active.json.
+  paletteWallpaperScript = pkgs.writeShellApplication {
+    name = "palette-wallpaper";
+    runtimeInputs = [ (pkgs.python3.withPackages (ps: [ ps.pillow ])) ];
+    text = ''
+      if [[ $# -lt 1 ]]; then
+        echo "Usage: palette-wallpaper <input.png> [output.png]" >&2
+        exit 1
+      fi
+      python3 - "$@" <<'PYEOF'
+import sys, os, json
+from PIL import Image
+
+def hex_to_rgb(h):
+    h = h.lstrip('#')
+    return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
+
+input_path  = sys.argv[1]
+output_path = sys.argv[2] if len(sys.argv) > 2 else os.path.expanduser("~/.local/share/wallpaper.png")
+
+palette_path = os.environ.get("PALETTE_FILE",
+               os.path.expanduser("~/.config/palettes/active.json"))
+if not os.path.isfile(palette_path):
+    print(f"[palette-wallpaper] ERROR: palette file not found: {palette_path}", file=sys.stderr)
+    sys.exit(1)
+
+with open(palette_path) as f:
+    palette = json.load(f)
+
+primary   = hex_to_rgb(palette["primary"])
+secondary = hex_to_rgb(palette["secondary"])
+bg        = hex_to_rgb(palette["bg"])
+
+img = Image.open(input_path).convert("RGBA")
+w, h = img.size
+
+# Build a 1-pixel-wide vertical gradient strip, then tile to full width.
+gradient = Image.new("RGB", (1, h))
+for y in range(h):
+    t = y / max(h - 1, 1)
+    r = round(primary[0] + (secondary[0] - primary[0]) * t)
+    g = round(primary[1] + (secondary[1] - primary[1]) * t)
+    b = round(primary[2] + (secondary[2] - primary[2]) * t)
+    gradient.putpixel((0, y), (r, g, b))
+gradient = gradient.resize((w, h), Image.NEAREST)
+
+# Solid background layer.
+background = Image.new("RGB", (w, h), bg)
+
+# Composite: alpha=255 (non-empty pixel) → gradient colour
+#            alpha=0   (empty pixel)     → bg colour
+_, _, _, alpha = img.split()
+out = Image.composite(gradient, background, alpha)
+
+os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+out.save(output_path)
+print(f"[palette-wallpaper] Saved → {output_path}")
+PYEOF
+    '';
+  };
+
   # ── palette-switch script ─────────────────────────────────────────────────
   paletteSwitchScript = pkgs.writeShellApplication {
     name = "palette-switch";
-    runtimeInputs = [ pkgs.jq ];
+    runtimeInputs = [ pkgs.jq paletteWallpaperScript ];
     text = ''
       PALETTES_DIR="$HOME/.config/palettes"
       ACTIVE_LINK="$PALETTES_DIR/active.json"
@@ -214,6 +278,22 @@ LUA_EOF
         log "Rendered Neovim palette → $out"
       }
 
+      render_wallpaper() {
+        local source_file="$HOME/.config/palettes/wallpaper-source.png"
+        local out="$HOME/.local/share/wallpaper.png"
+        if [[ ! -f "$source_file" ]]; then
+          log "No wallpaper source at $source_file – skipping"
+          log "(place a PNG there to enable palette-coloured wallpapers)"
+          return 0
+        fi
+        if palette-wallpaper "$source_file" "$out"; then
+          log "Rendered wallpaper → $out"
+        else
+          log_err "palette-wallpaper failed – check that $source_file is a valid PNG"
+          return 1
+        fi
+      }
+
       # ── Reload hooks ─────────────────────────────────────────────────────
 
       reload_waybar() {
@@ -250,6 +330,18 @@ LUA_EOF
           || log "No running Neovim instances found"
       }
 
+      reload_wallpaper() {
+        local out="$HOME/.local/share/wallpaper.png"
+        [[ -f "$out" ]] || return 0
+        if command -v swww > /dev/null 2>&1 && swww query > /dev/null 2>&1; then
+          swww img "$out" \
+            && log "Set wallpaper via swww" \
+            || log_err "Failed to set wallpaper via swww"
+        else
+          log "swww not running – skipping wallpaper apply"
+        fi
+      }
+
       # ── Apply all modules ─────────────────────────────────────────────────
 
       apply_all() {
@@ -257,14 +349,16 @@ LUA_EOF
         palette_name=$(jq -r '.name // "unknown"' "$ACTIVE_LINK")
         log "Applying palette: $palette_name"
 
-        render_ghostty  || log_err "Ghostty render failed"
-        render_waybar   || log_err "Waybar render failed"
-        render_hyprland || log_err "Hyprland render failed"
-        render_neovim   || log_err "Neovim render failed"
+        render_ghostty   || log_err "Ghostty render failed"
+        render_waybar    || log_err "Waybar render failed"
+        render_hyprland  || log_err "Hyprland render failed"
+        render_neovim    || log_err "Neovim render failed"
+        render_wallpaper || true
 
-        reload_waybar   || true
-        reload_hyprland || true
-        reload_neovim   || true
+        reload_waybar    || true
+        reload_hyprland  || true
+        reload_neovim    || true
+        reload_wallpaper || true
       }
 
       # ── Usage ─────────────────────────────────────────────────────────────
@@ -277,12 +371,15 @@ Commands:
   list       List available palettes (active one marked with *)
   apply      Re-render all module configs from the current active palette
              and reload affected programs
+  wallpaper  Re-render and apply the wallpaper only
+             (reads ~/.config/palettes/wallpaper-source.png)
   <name>     Switch to the named palette, render configs, and reload programs
 
 Examples:
   palette-switch list
   palette-switch tokyo-night
   palette-switch gruvbox
+  palette-switch wallpaper
   palette-switch apply
 USAGE_EOF
       }
@@ -312,6 +409,10 @@ USAGE_EOF
         apply)
           apply_all
           ;;
+        wallpaper)
+          render_wallpaper
+          reload_wallpaper
+          ;;
         "")
           usage
           ;;
@@ -340,8 +441,8 @@ lib.mkIf cfg.enable {
   home.file.".config/palettes/everforest.json".text   = builtins.toJSON everforest;
   home.file.".config/palettes/catppuccin.json".text   = builtins.toJSON catppuccin;
 
-  # ── Install the palette-switch script ─────────────────────────────────────
-  home.packages = [ paletteSwitchScript ];
+  # ── Install the palette-switch and palette-wallpaper scripts ──────────────
+  home.packages = [ paletteSwitchScript paletteWallpaperScript ];
 
   # ── Activation: set up the active symlink and generate initial configs ─────
   home.activation.palette-switcher = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
