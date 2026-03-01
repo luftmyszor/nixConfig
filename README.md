@@ -53,7 +53,8 @@ nixConfig/
 │   ├── terminals/
 │   │   └── ghostty/           # Ghostty terminal emulator
 │   ├── themes/
-│   │   ├── palette.nix        # Active color palette (edit to change theme)
+│   │   ├── palette.nix        # Build-time color palette (edit to change build theme)
+│   │   ├── palette-switcher/  # Runtime palette switcher module (no rebuild needed)
 │   │   └── palleteCatalogue/  # Ready-made palette presets
 │   └── window-managers/
 │       └── hyprland/          # Hyprland Wayland compositor
@@ -155,7 +156,7 @@ modules.editors.vscode.enable          = true;
 
 | Module | Option | Description |
 |---|---|---|
-| ghostty | `modules.terminals.ghostty.enable` | Ghostty terminal emulator — colors are derived from the active palette |
+| ghostty | `modules.terminals.ghostty.enable` | Ghostty terminal emulator — runtime colors managed by `palette-switch` |
 
 ### Window Managers — `modules/window-managers`
 
@@ -181,6 +182,12 @@ modules.editors.vscode.enable          = true;
 | waybar | `modules.services.waybar.enable` | Waybar status bar with a drop-down animation script (`dropWaybar.sh`); **disabled by default** |
 | wofi | `modules.services.wofi.enable` | Wofi application launcher; config and CSS are generated from the active palette |
 
+### Themes — `modules/themes`
+
+| Module | Option | Description |
+|---|---|---|
+| palette-switcher | `modules.themes.palette-switcher.enable` | Runtime palette switcher — deploys palette JSON files, installs `palette-switch` script, and generates module configs on activation |
+
 ### Editors — `modules/editors`
 
 | Module | Option | Description |
@@ -193,9 +200,60 @@ modules.editors.vscode.enable          = true;
 
 ### Active Palette
 
-`modules/themes/palette.nix` is the **single source of truth** for colors. It is imported directly in `flake.nix` and passed as a special argument (`palette`) to every module that needs it.
+`modules/themes/palette.nix` is the **static palette** used at Nix-build time (for modules that still reference it, such as `wofi`). It is imported in `flake.nix` and passed as a special argument (`palette`) to every module that needs it at build time.
 
-The current active theme is **Tokyo Night**. To switch themes, replace the contents of `modules/themes/palette.nix` with any file from `palleteCatalogue/`.
+The current build-time theme is **Tokyo Night**. To change the build-time theme you still replace the contents of `palette.nix` with any file from `palleteCatalogue/` and rebuild.
+
+---
+
+### Runtime Palette Switching (no rebuild needed)
+
+The `palette-switcher` module (`modules/themes/palette-switcher/`) provides **runtime palette switching** using a `palette-switch` script. After one initial NixOS build, you can swap themes instantly without triggering a rebuild.
+
+#### How it works
+
+1. **After the first build**, five palette JSON files are deployed to `~/.config/palettes/`:
+   - `tokyo-night.json`, `gruvbox.json`, `nord.json`, `everforest.json`, `catppuccin.json`
+2. `~/.config/palettes/active.json` is a symlink pointing to the current palette.
+3. `palette-switch` reads `active.json` with `jq`, renders config files for every supported module, and reloads running programs.
+
+#### Usage
+
+```bash
+# List available palettes (active one is marked with *)
+palette-switch list
+
+# Switch to a palette and apply immediately
+palette-switch tokyo-night
+palette-switch gruvbox
+palette-switch nord
+palette-switch everforest
+palette-switch catppuccin
+
+# Re-render all configs from the current active palette (e.g. after a fresh install)
+palette-switch apply
+```
+
+#### Supported modules
+
+| Module | Config generated | Reload hook |
+|---|---|---|
+| **Ghostty** | `~/.config/ghostty/colors.conf` | New windows pick up colors automatically |
+| **Waybar** | `~/.config/waybar/normal-style.css` | `pkill -SIGUSR2 waybar` |
+| **Hyprland** | `~/.config/hypr/palette-colors.conf` | `hyprctl reload` |
+| **Neovim** | `~/.config/nvim/lua/palette-colors.lua` | Running instances signaled via socket |
+
+##### Neovim integration
+
+Add the following line to your `~/.config/nvim/init.lua` to apply the palette automatically when Neovim starts:
+
+```lua
+pcall(function() require('palette-colors').apply() end)
+```
+
+---
+
+### Palette Catalogue
 
 All palette files expose the same set of color keys:
 
