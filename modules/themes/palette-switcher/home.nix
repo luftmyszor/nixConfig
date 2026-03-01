@@ -111,8 +111,6 @@ PYEOF
         muted=$(jq -r '.muted'         "$ACTIVE_LINK")
         light=$(jq -r '.light'         "$ACTIVE_LINK")
         white=$(jq -r '.white'         "$ACTIVE_LINK")
-        bgTransparent=$(jq -r '.bgTransparent'   "$ACTIVE_LINK")
-        darkTransparent=$(jq -r '.darkTransparent' "$ACTIVE_LINK")
       }
 
       # ── Module renderers ─────────────────────────────────────────────────
@@ -298,9 +296,11 @@ LUA_EOF
 
       reload_waybar() {
         if pgrep -x waybar > /dev/null 2>&1; then
-          pkill -SIGUSR2 waybar \
-            && log "Reloaded Waybar" \
-            || log_err "Failed to signal Waybar"
+          if pkill -SIGUSR2 waybar; then
+            log "Reloaded Waybar"
+          else
+            log_err "Failed to signal Waybar"
+          fi
         else
           log "Waybar not running – skipping reload"
         fi
@@ -308,9 +308,11 @@ LUA_EOF
 
       reload_hyprland() {
         if command -v hyprctl > /dev/null 2>&1 && hyprctl version > /dev/null 2>&1; then
-          hyprctl reload \
-            && log "Reloaded Hyprland" \
-            || log_err "Failed to reload Hyprland"
+          if hyprctl reload; then
+            log "Reloaded Hyprland"
+          else
+            log_err "Failed to reload Hyprland"
+          fi
         else
           log "hyprctl not available – skipping Hyprland reload"
         fi
@@ -320,23 +322,29 @@ LUA_EOF
         local reloaded=0
         for sock in /tmp/nvim*.sock /run/user/"$(id -u)"/nvim*.sock; do
           [[ -S "$sock" ]] || continue
-          nvim --server "$sock" \
-               --remote-send ':lua pcall(function() require("palette-colors").apply() end)<CR>' \
-            && reloaded=$((reloaded + 1)) \
-            || log_err "Failed to signal Neovim socket: $sock"
+          if nvim --server "$sock" \
+               --remote-send ':lua pcall(function() require("palette-colors").apply() end)<CR>'; then
+            reloaded=$((reloaded + 1))
+          else
+            log_err "Failed to signal Neovim socket: $sock"
+          fi
         done
-        [[ $reloaded -gt 0 ]] \
-          && log "Signaled $reloaded Neovim instance(s)" \
-          || log "No running Neovim instances found"
+        if [[ $reloaded -gt 0 ]]; then
+          log "Signaled $reloaded Neovim instance(s)"
+        else
+          log "No running Neovim instances found"
+        fi
       }
 
       reload_wallpaper() {
         local out="$HOME/.local/share/wallpaper.png"
         [[ -f "$out" ]] || return 0
         if command -v swww > /dev/null 2>&1 && swww query > /dev/null 2>&1; then
-          swww img "$out" \
-            && log "Set wallpaper via swww" \
-            || log_err "Failed to set wallpaper via swww"
+          if swww img "$out"; then
+            log "Set wallpaper via swww"
+          else
+            log_err "Failed to set wallpaper via swww"
+          fi
         else
           log "swww not running – skipping wallpaper apply"
         fi
