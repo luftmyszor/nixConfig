@@ -1,15 +1,23 @@
-{ config, pkgs, lib, palette, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  palette,
+  ...
+}:
 
-let 
+let
   moduleLib = import ../../lib/loadModules.nix { inherit lib; };
+
 in
 {
-  imports = moduleLib.loadSystemModules ++ moduleLib.loadOptions ++ [ 
+  imports =
+    moduleLib.loadSystemModules
+    ++ moduleLib.loadOptions
+    ++ [
       ./hardware-configuration.nix
-  ];
-
-
-
+      ./systemNixFiles/filesystem.nix
+    ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -37,8 +45,12 @@ in
     LC_TELEPHONE = "pl_PL.UTF-8";
     LC_TIME = "pl_PL.UTF-8";
   };
-  
-  nix.settings.experimental-features = [ "nix-command" "flakes" "pipe-operators" ];
+
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+    "pipe-operators"
+  ];
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
@@ -71,14 +83,15 @@ in
   users.users.luftmyszor = {
     isNormalUser = true;
     description = "luftmyszor";
-    extraGroups = [ "networkmanager" "wheel" ];
-    packages = with pkgs; [
-    #  thunderbird
+    extraGroups = [
+      "networkmanager"
+      "wheel"
     ];
-     
-    
-  };
+    packages = with pkgs; [
 
+    ];
+
+  };
 
   programs.firefox.enable = true;
 
@@ -86,18 +99,19 @@ in
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
-  neovim
-  wget
-  tree
-  fastfetch
-  wl-clipboard
-  brightnessctl
-  gimp3-with-plugins
-  inkscape-with-extensions
-  gh
-  git
-  vim
-  jq 
+    neovim
+    wget
+    tree
+    fastfetch
+    wl-clipboard
+    brightnessctl
+    gimp3-with-plugins
+    inkscape-with-extensions
+    gh
+    git
+    vim
+    jq
+    mupdf
   ];
 
   modules.shells.zsh.enable = true;
@@ -106,14 +120,14 @@ in
 
   modules.services.quickshell.enable = true;
   modules.services.waybar.enable = false;
-  modules.services.swww.enable = true; 
+  modules.services.swww.enable = true;
   modules.services.wofi.enable = true;
+
+  modules.editors.vscode.enable = true;
 
   home-manager.useGlobalPkgs = true;
   home-manager.useUserPackages = true;
 
-
   system.stateVersion = "25.05";
 
 }
-

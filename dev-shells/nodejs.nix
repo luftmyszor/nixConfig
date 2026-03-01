@@ -1,18 +1,17 @@
 { pkgs }:
-
-pkgs.mkShell {
-  packages = with pkgs; [
-    nodejs
+let
+  myPackages = with pkgs; [
+    nodejs_24
     yarn
-    npm
     pnpm
   ];
+in
 
-  # optional: environment tweaks
+pkgs.mkShell {
+  panodejs_25ckages = myPackages;
   shellHook = ''
-    echo "🟢 Node.js dev shell ready!"
-    echo "node version: $(node -v)"
-    echo "npm version: $(npm -v)"
+    ${import ./shell-hook.nix { inherit pkgs; shellName = "nodejs"; packages = myPackages; }}
   '';
 }
+
 
