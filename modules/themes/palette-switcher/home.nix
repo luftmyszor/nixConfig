@@ -111,8 +111,6 @@ PYEOF
         muted=$(jq -r '.muted'         "$ACTIVE_LINK")
         light=$(jq -r '.light'         "$ACTIVE_LINK")
         white=$(jq -r '.white'         "$ACTIVE_LINK")
-        bgTransparent=$(jq -r '.bgTransparent'   "$ACTIVE_LINK")
-        darkTransparent=$(jq -r '.darkTransparent' "$ACTIVE_LINK")
       }
 
       # ── Module renderers ─────────────────────────────────────────────────
