@@ -105,21 +105,33 @@ log "Active theme: $theme"
 
 # waybar
 if pgrep -x waybar > /dev/null 2>&1; then
-  pkill -USR2 waybar && log "Reloaded waybar" || log_err "Failed to reload waybar"
+  if pkill -USR2 waybar; then
+    log "Reloaded waybar"
+  else
+    log_err "Failed to reload waybar"
+  fi
 else
   log "waybar not running – skipping"
 fi
 
 # hyprland
 if command -v hyprctl > /dev/null 2>&1 && hyprctl version > /dev/null 2>&1; then
-  hyprctl reload && log "Reloaded hyprland" || log_err "Failed to reload hyprland"
+  if hyprctl reload; then
+    log "Reloaded hyprland"
+  else
+    log_err "Failed to reload hyprland"
+  fi
 else
   log "hyprctl not available – skipping"
 fi
 
 # sway
 if command -v swaymsg > /dev/null 2>&1 && swaymsg -t get_version > /dev/null 2>&1; then
-  swaymsg reload && log "Reloaded sway" || log_err "Failed to reload sway"
+  if swaymsg reload; then
+    log "Reloaded sway"
+  else
+    log_err "Failed to reload sway"
+  fi
 else
   log "sway not running – skipping"
 fi
