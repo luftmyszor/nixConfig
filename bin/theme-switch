@@ -10,7 +10,7 @@
 set -euo pipefail
 
 CATALOGUE_DIR="${THEME_CATALOGUE_DIR:-/etc/nixos/modules/themes/palleteCatalogue}"
-CACHE_DIR="$HOME/.cache/theme/current"
+CACHE_DIR="${HOME}/.cache/theme/current"
 
 log()     { echo "[theme-switch] $*"; }
 log_err() { echo "[theme-switch] ERROR: $*" >&2; }
@@ -42,15 +42,15 @@ EOF
 }
 
 list_themes() {
-  if [[ ! -d "$CATALOGUE_DIR" ]]; then
-    log_err "Catalogue directory not found: $CATALOGUE_DIR"
+  if [[ ! -d "${CATALOGUE_DIR}" ]]; then
+    log_err "Catalogue directory not found: ${CATALOGUE_DIR}"
     log_err "Override with: THEME_CATALOGUE_DIR=/path/to/palleteCatalogue theme-switch list"
     exit 1
   fi
   log "Available themes:"
-  for f in "$CATALOGUE_DIR"/*.nix; do
-    [[ -f "$f" ]] || continue
-    basename "$f" .nix
+  for f in "${CATALOGUE_DIR}"/*.nix; do
+    [[ -f "${f}" ]] || continue
+    basename "${f}" .nix
   done
 }
 
@@ -61,45 +61,45 @@ fi
 
 theme="${1}"
 
-if [[ "$theme" == "list" ]]; then
+if [[ "${theme}" == "list" ]]; then
   list_themes
   exit 0
 fi
 
 palette_file="${CATALOGUE_DIR}/${theme}.nix"
-if [[ ! -f "$palette_file" ]]; then
-  log_err "Theme '$theme' not found at: $palette_file"
+if [[ ! -f "${palette_file}" ]]; then
+  log_err "Theme '${theme}' not found at: ${palette_file}"
   log_err "Run  theme-switch list  to see available themes"
   exit 1
 fi
 
-log "Loading palette: $theme"
+log "Loading palette: ${theme}"
 
 # Convert Nix palette attrset to JSON
-palette_json=$(nix eval --json --expr "import $palette_file")
+palette_json=$(nix eval --json --expr "import ${palette_file}")
 
 # Ensure cache directory exists
-mkdir -p "$CACHE_DIR"
+mkdir -p "${CACHE_DIR}"
 
 # Atomically write palette.json
-tmp_json=$(mktemp "$CACHE_DIR/.palette.json.XXXXXX")
-printf '%s\n' "$palette_json" > "$tmp_json"
-mv "$tmp_json" "$CACHE_DIR/palette.json"
-log "Written: $CACHE_DIR/palette.json"
+tmp_json=$(mktemp "${CACHE_DIR}/.palette.json.XXXXXX")
+printf '%s\n' "${palette_json}" > "${tmp_json}"
+mv "${tmp_json}" "${CACHE_DIR}/palette.json"
+log "Written: ${CACHE_DIR}/palette.json"
 
 # Generate CSS custom-properties from JSON and write atomically
-tmp_css=$(mktemp "$CACHE_DIR/.palette.css.XXXXXX")
+tmp_css=$(mktemp "${CACHE_DIR}/.palette.css.XXXXXX")
 {
   printf ':root {\n'
-  printf '%s\n' "$palette_json" | jq -r 'to_entries | .[] | "  --\(.key): \(.value);"'
+  printf '%s\n' "${palette_json}" | jq -r 'to_entries | .[] | "  --\(.key): \(.value);"'
   printf '}\n'
-} > "$tmp_css"
-mv "$tmp_css" "$CACHE_DIR/palette.css"
-log "Written: $CACHE_DIR/palette.css"
+} > "${tmp_css}"
+mv "${tmp_css}" "${CACHE_DIR}/palette.css"
+log "Written: ${CACHE_DIR}/palette.css"
 
 # Record the active theme name
-printf '%s\n' "$theme" > "$(dirname "$CACHE_DIR")/current.theme"
-log "Active theme: $theme"
+printf '%s\n' "${theme}" > "$(dirname "${CACHE_DIR}")/current.theme"
+log "Active theme: ${theme}"
 
 # ------ reload running applications (best effort) ----------------------------
 
@@ -115,22 +115,30 @@ else
 fi
 
 # hyprland
-if command -v hyprctl > /dev/null 2>&1 && hyprctl version > /dev/null 2>&1; then
-  if hyprctl reload; then
-    log "Reloaded hyprland"
+if command -v hyprctl > /dev/null 2>&1; then
+  if hyprctl version > /dev/null 2>&1; then
+    if hyprctl reload; then
+      log "Reloaded hyprland"
+    else
+      log_err "Failed to reload hyprland"
+    fi
   else
-    log_err "Failed to reload hyprland"
+    log "hyprctl not available – skipping"
   fi
 else
   log "hyprctl not available – skipping"
 fi
 
 # sway
-if command -v swaymsg > /dev/null 2>&1 && swaymsg -t get_version > /dev/null 2>&1; then
-  if swaymsg reload; then
-    log "Reloaded sway"
+if command -v swaymsg > /dev/null 2>&1; then
+  if swaymsg -t get_version > /dev/null 2>&1; then
+    if swaymsg reload; then
+      log "Reloaded sway"
+    else
+      log_err "Failed to reload sway"
+    fi
   else
-    log_err "Failed to reload sway"
+    log "sway not running – skipping"
   fi
 else
   log "sway not running – skipping"
