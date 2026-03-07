@@ -8,15 +8,30 @@
 let
   cfg = config.modules.themes.palette-switcher;
 
-  # ── Import palette data from the existing Nix catalogue ───────────────────
-  tokyoNight = import ../palleteCatalogue/tokyo-night.nix;
-  gruvbox = import ../palleteCatalogue/gruvebox.nix;
-  nord = import ../palleteCatalogue/nord.nix;
-  everforest = import ../palleteCatalogue/everforest.nix;
-  catppuccin = (import ../palleteCatalogue/palette.nix) // {
-    name = "catppuccin";
-    description = "Catppuccin Mocha-inspired palette";
-  };
+  # ── Automatically discover all palette .nix files in the catalogue ────────
+  catalogueDir = ../palleteCatalogue;
+
+  # Build a map of palette-name → palette-data by reading every .nix file in
+  # the catalogue directory.  The palette name is taken from the file's own
+  # `name` attribute when present; otherwise it falls back to the filename
+  # (without the .nix extension).
+  allCatalogueEntries = builtins.readDir catalogueDir;
+  nixFiles = builtins.filter (f: lib.hasSuffix ".nix" f) (builtins.attrNames allCatalogueEntries);
+
+  palettes =
+    builtins.listToAttrs (
+      builtins.map (
+        filename:
+        let
+          data = import (catalogueDir + "/${filename}");
+          paletteName = data.name or (lib.removeSuffix ".nix" filename);
+        in
+        {
+          name = paletteName;
+          value = data // { name = paletteName; };
+        }
+      ) nixFiles
+    );
 
   # ── palette-wallpaper script ──────────────────────────────────────────────
   # Takes a PNG file, applies a top-to-bottom gradient (primary→secondary) to
@@ -471,12 +486,10 @@ let
 in
 lib.mkIf cfg.enable {
 
-  # ── Deploy palette JSON files ──────────────────────────────────────────────
-  home.file.".config/palettes/tokyo-night.json".text = builtins.toJSON tokyoNight;
-  home.file.".config/palettes/gruvbox.json".text = builtins.toJSON gruvbox;
-  home.file.".config/palettes/nord.json".text = builtins.toJSON nord;
-  home.file.".config/palettes/everforest.json".text = builtins.toJSON everforest;
-  home.file.".config/palettes/catppuccin.json".text = builtins.toJSON catppuccin;
+  # ── Deploy palette JSON files (auto-detected from palleteCatalogue) ────────
+  home.file = lib.mapAttrs' (
+    name: data: lib.nameValuePair ".config/palettes/${name}.json" { text = builtins.toJSON data; }
+  ) palettes;
 
   # ── Install the palette-switch and palette-wallpaper scripts ──────────────
   home.packages = [
