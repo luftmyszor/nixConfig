@@ -4,14 +4,14 @@
   description = "JetBrains-inspired dark theme (Darcula-like) with blue accent and warm highlights";
 
   # Base background/foreground
-  bg = "#2b2b2b"; # main IDE background
-  programBg = "#1f1f1f"; # slightly darker for terminals/panels
+  bg = "#131313"; # main IDE background
+  programBg = "#171717"; # slightly darker for terminals/panels
   fg = "#a9b7c6"; # typical JetBrains editor foreground
 
   # Accent colors
-  primary = "#3574f0"; # JetBrains-ish blue accent
-  secondary = "#b99bf8"; # soft purple highlight
-  tertiary = "#6aab73"; # green (success-ish)
+  primary = "#E627F8"; # JetBrains-ish blue accent
+  secondary = "#FF841B"; # soft purple highlight
+  tertiary = "#FF0007"; # green (success-ish)
 
   # Semantic intent
   accent = "#3574f0";
