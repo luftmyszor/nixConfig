@@ -8,6 +8,11 @@
 let
   cfg = config.modules.themes.palette-switcher;
 
+  # Extension path used by both the shell renderer and vscode/home.nix.
+  # Keep in sync with modules/editors/vscode/home.nix → paletteExtVersion.
+  paletteExtVersion = "0.0.1";
+  paletteThemeFile = ".vscode/extensions/palette-theme-${paletteExtVersion}/themes/palette-dark.json";
+
   # ── Automatically discover all palette .nix files in the catalogue ────────
   catalogueDir = ../palleteCatalogue;
 
@@ -350,15 +355,16 @@ let
 
             render_vscode() {
               load_palette
-              local settings_file="$HOME/.config/Code/User/settings.json"
-              mkdir -p "$(dirname "$settings_file")"
-
-              # Seed an empty JSON object if the settings file doesn't exist yet
-              [[ -f "$settings_file" ]] || echo '{}' > "$settings_file"
+              # Write to a standalone VSCode color-theme file so that
+              # settings.json (managed declaratively by home-manager) is never
+              # touched.  The extension manifest is laid down by home-manager;
+              # only the theme colors file is generated here.
+              local theme_file="$HOME/${paletteThemeFile}"
+              mkdir -p "$(dirname "$theme_file")"
 
               local tmp
               tmp=$(mktemp)
-              jq \
+              jq -n \
                 --arg bg        "$bg"        \
                 --arg programBg "$programBg" \
                 --arg fg        "$fg"        \
@@ -373,74 +379,105 @@ let
                 --arg dark      "$dark"      \
                 --arg muted     "$muted"     \
                 --arg white     "$white"     \
-                '
-                .["workbench.colorCustomizations"] = {
-                  "editor.background":                 $bg,
-                  "editor.foreground":                 $fg,
-                  "editor.lineHighlightBackground":    $dark,
-                  "editor.selectionBackground":        $muted,
-                  "editorCursor.foreground":           $accent,
-                  "editorLineNumber.foreground":       $muted,
-                  "editorLineNumber.activeForeground": $fg,
-                  "editorIndentGuide.background1":     $muted,
-                  "editorGroupHeader.tabsBackground":  $programBg,
-                  "tab.activeBackground":              $dark,
-                  "tab.inactiveBackground":            $programBg,
-                  "tab.activeForeground":              $fg,
-                  "tab.inactiveForeground":            $muted,
-                  "activityBar.background":            $programBg,
-                  "activityBar.foreground":            $fg,
-                  "activityBar.activeBorder":          $primary,
-                  "sideBar.background":                $programBg,
-                  "sideBar.foreground":                $fg,
-                  "sideBarTitle.foreground":           $primary,
-                  "statusBar.background":              $dark,
-                  "statusBar.foreground":              $fg,
-                  "statusBar.noFolderBackground":      $dark,
-                  "titleBar.activeBackground":         $programBg,
-                  "titleBar.activeForeground":         $fg,
-                  "titleBar.inactiveBackground":       $programBg,
-                  "panel.background":                  $programBg,
-                  "panelTitle.activeForeground":       $primary,
-                  "terminal.background":               $bg,
-                  "terminal.foreground":               $fg,
-                  "terminal.ansiBlack":                $dark,
-                  "terminal.ansiRed":                  $danger,
-                  "terminal.ansiGreen":                $success,
-                  "terminal.ansiYellow":               $warning,
-                  "terminal.ansiBlue":                 $primary,
-                  "terminal.ansiMagenta":              $secondary,
-                  "terminal.ansiCyan":                 $info,
-                  "terminal.ansiWhite":                $white,
-                  "focusBorder":                       $primary,
-                  "selection.background":              $muted,
-                  "input.background":                  $programBg,
-                  "input.foreground":                  $fg,
-                  "input.border":                      $muted,
-                  "inputOption.activeBorder":          $primary,
-                  "list.activeSelectionBackground":    $dark,
-                  "list.activeSelectionForeground":    $fg,
-                  "list.hoverBackground":              $dark,
-                  "scrollbarSlider.background":        $muted,
-                  "scrollbarSlider.hoverBackground":   $primary,
-                  "button.background":                 $primary,
-                  "button.foreground":                 $bg,
-                  "badge.background":                  $primary,
-                  "badge.foreground":                  $bg,
-                  "progressBar.background":            $primary
-                } |
-                .["editor.tokenColorCustomizations"] = {
-                  "comments":  $muted,
-                  "keywords":  $primary,
-                  "functions": $secondary,
-                  "strings":   $success,
-                  "numbers":   $warning,
-                  "types":     $tertiary,
-                  "variables": $fg
-                }
-                ' "$settings_file" > "$tmp"
-              mv "$tmp" "$settings_file"
-              log "Rendered VSCode settings → $settings_file"
+                '{
+                  "$schema": "vscode://schemas/color-theme",
+                  "name": "Palette Dark",
+                  "type": "dark",
+                  "colors": {
+                    "editor.background":                 $bg,
+                    "editor.foreground":                 $fg,
+                    "editor.lineHighlightBackground":    $dark,
+                    "editor.selectionBackground":        $muted,
+                    "editorCursor.foreground":           $accent,
+                    "editorLineNumber.foreground":       $muted,
+                    "editorLineNumber.activeForeground": $fg,
+                    "editorIndentGuide.background1":     $muted,
+                    "editorGroupHeader.tabsBackground":  $programBg,
+                    "tab.activeBackground":              $dark,
+                    "tab.inactiveBackground":            $programBg,
+                    "tab.activeForeground":              $fg,
+                    "tab.inactiveForeground":            $muted,
+                    "activityBar.background":            $programBg,
+                    "activityBar.foreground":            $fg,
+                    "activityBar.activeBorder":          $primary,
+                    "sideBar.background":                $programBg,
+                    "sideBar.foreground":                $fg,
+                    "sideBarTitle.foreground":           $primary,
+                    "statusBar.background":              $dark,
+                    "statusBar.foreground":              $fg,
+                    "statusBar.noFolderBackground":      $dark,
+                    "titleBar.activeBackground":         $programBg,
+                    "titleBar.activeForeground":         $fg,
+                    "titleBar.inactiveBackground":       $programBg,
+                    "panel.background":                  $programBg,
+                    "panelTitle.activeForeground":       $primary,
+                    "terminal.background":               $bg,
+                    "terminal.foreground":               $fg,
+                    "terminal.ansiBlack":                $dark,
+                    "terminal.ansiRed":                  $danger,
+                    "terminal.ansiGreen":                $success,
+                    "terminal.ansiYellow":               $warning,
+                    "terminal.ansiBlue":                 $primary,
+                    "terminal.ansiMagenta":              $secondary,
+                    "terminal.ansiCyan":                 $info,
+                    "terminal.ansiWhite":                $white,
+                    "focusBorder":                       $primary,
+                    "selection.background":              $muted,
+                    "input.background":                  $programBg,
+                    "input.foreground":                  $fg,
+                    "input.border":                      $muted,
+                    "inputOption.activeBorder":          $primary,
+                    "list.activeSelectionBackground":    $dark,
+                    "list.activeSelectionForeground":    $fg,
+                    "list.hoverBackground":              $dark,
+                    "scrollbarSlider.background":        $muted,
+                    "scrollbarSlider.hoverBackground":   $primary,
+                    "button.background":                 $primary,
+                    "button.foreground":                 $bg,
+                    "badge.background":                  $primary,
+                    "badge.foreground":                  $bg,
+                    "progressBar.background":            $primary
+                  },
+                  "tokenColors": [
+                    {
+                      "name": "Comment",
+                      "scope": ["comment", "punctuation.definition.comment"],
+                      "settings": { "foreground": $muted, "fontStyle": "italic" }
+                    },
+                    {
+                      "name": "Keyword",
+                      "scope": ["keyword", "storage.type", "storage.modifier"],
+                      "settings": { "foreground": $primary, "fontStyle": "bold" }
+                    },
+                    {
+                      "name": "Function",
+                      "scope": ["entity.name.function", "support.function"],
+                      "settings": { "foreground": $secondary }
+                    },
+                    {
+                      "name": "String",
+                      "scope": ["string", "string.quoted"],
+                      "settings": { "foreground": $success }
+                    },
+                    {
+                      "name": "Number",
+                      "scope": ["constant.numeric"],
+                      "settings": { "foreground": $warning }
+                    },
+                    {
+                      "name": "Type",
+                      "scope": ["entity.name.type", "support.type"],
+                      "settings": { "foreground": $tertiary }
+                    },
+                    {
+                      "name": "Variable",
+                      "scope": ["variable", "variable.other"],
+                      "settings": { "foreground": $fg }
+                    }
+                  ]
+                }' > "$tmp"
+              mv "$tmp" "$theme_file"
+              log "Rendered VSCode color theme → $theme_file"
             }
 
             render_wallpaper() {
