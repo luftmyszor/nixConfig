@@ -575,7 +575,15 @@ let
             }
 
             reload_vscode() {
-              log "VSCode has no live-reload signal – open VSCode and run 'Developer: Reload Window' to apply the new theme"
+              if command -v code > /dev/null 2>&1; then
+                if code --command workbench.action.reloadWindow 2>/dev/null; then
+                  log "Reloaded VSCode window"
+                else
+                  log "VSCode not running – skipping reload"
+                fi
+              else
+                log "code CLI not found – skipping VSCode reload"
+              fi
             }
 
             # ── Apply all modules ─────────────────────────────────────────────────
