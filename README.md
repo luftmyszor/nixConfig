@@ -15,6 +15,9 @@ A modular NixOS configuration flake for the `luftmyszor` host. The setup uses **
 - [Available Modules](#available-modules)
 - [Theme System](#theme-system)
   - [Active Palette](#active-palette)
+  - [Live Theme Switcher (`theme-switch`)](#live-theme-switcher-theme-switch)
+  - [Runtime Palette Switching (`palette-switch`)](#runtime-palette-switching-no-rebuild-needed)
+  - [Color Keys](#color-keys)
   - [Palette Catalogue](#palette-catalogue)
   - [Using Palette Colors](#using-palette-colors)
 - [Dev Shells](#dev-shells)
@@ -189,7 +192,15 @@ modules.editors.vscode.enable          = true;
 
 | Module | Option | Description |
 |---|---|---|
-| palette-switcher | `modules.themes.palette-switcher.enable` | Runtime palette switcher — deploys palette JSON files, installs `palette-switch` script, and generates module configs on activation |
+| palette-switcher | `modules.themes.palette-switcher.enable` | Runtime palette switcher — deploys palette JSON files, installs `palette-switch` and `palette-wallpaper` scripts, and generates module configs on activation |
+
+`palette-switcher` also exposes a `defaultPalette` option:
+
+```nix
+modules.themes.palette-switcher.defaultPalette = "tokyo-night"; # default
+```
+
+Set this to any palette name (`tokyo-night`, `gruvbox`, `nord`, `everforest`, `catppuccin`) to control which palette is activated on a fresh install.
 
 ### Editors — `modules/editors`
 
@@ -286,6 +297,9 @@ palette-switch nord
 palette-switch everforest
 palette-switch catppuccin
 
+# Re-render and apply the wallpaper only
+palette-switch wallpaper
+
 # Re-render all configs from the current active palette (e.g. after a fresh install)
 palette-switch apply
 ```
@@ -298,6 +312,7 @@ palette-switch apply
 | **Waybar** | `~/.config/waybar/normal-style.css` | `pkill -SIGUSR2 waybar` |
 | **Hyprland** | `~/.config/hypr/palette-colors.conf` | `hyprctl reload` |
 | **Neovim** | `~/.config/nvim/lua/palette-colors.lua` | Running instances signaled via socket |
+| **Wallpaper** | `~/.local/share/wallpaper.png` | `swww img` (if swww is running) |
 
 ##### Neovim integration
 
@@ -307,9 +322,23 @@ Add the following line to your `~/.config/nvim/init.lua` to apply the palette au
 pcall(function() require('palette-colors').apply() end)
 ```
 
+##### Wallpaper integration
+
+`palette-wallpaper` tints any PNG image with a gradient derived from the active palette (top = `primary`, bottom = `secondary`, transparent pixels filled with `bg`):
+
+```bash
+# Place your source image here, then run palette-switch to apply
+cp my-image.png ~/.config/palettes/wallpaper-source.png
+palette-switch wallpaper          # render + apply via swww
+# or switch theme and re-render all at once:
+palette-switch nord
+```
+
+The rendered wallpaper is saved to `~/.local/share/wallpaper.png` and passed to `swww img` automatically if `swww` is running.
+
 ---
 
-### Palette Catalogue
+### Color Keys
 
 All palette files expose the same set of color keys:
 
