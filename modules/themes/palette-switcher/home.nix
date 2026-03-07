@@ -348,6 +348,101 @@ let
               log "Rendered Wofi CSS → $css_dir/style.css"
             }
 
+            render_vscode() {
+              load_palette
+              local settings_file="$HOME/.config/Code/User/settings.json"
+              mkdir -p "$(dirname "$settings_file")"
+
+              # Seed an empty JSON object if the settings file doesn't exist yet
+              [[ -f "$settings_file" ]] || echo '{}' > "$settings_file"
+
+              local tmp
+              tmp=$(mktemp)
+              jq \
+                --arg bg        "$bg"        \
+                --arg programBg "$programBg" \
+                --arg fg        "$fg"        \
+                --arg primary   "$primary"   \
+                --arg secondary "$secondary" \
+                --arg tertiary  "$tertiary"  \
+                --arg accent    "$accent"    \
+                --arg danger    "$danger"    \
+                --arg warning   "$warning"   \
+                --arg success   "$success"   \
+                --arg info      "$info"      \
+                --arg dark      "$dark"      \
+                --arg muted     "$muted"     \
+                --arg white     "$white"     \
+                '
+                .["workbench.colorCustomizations"] = {
+                  "editor.background":                 $bg,
+                  "editor.foreground":                 $fg,
+                  "editor.lineHighlightBackground":    $dark,
+                  "editor.selectionBackground":        $muted,
+                  "editorCursor.foreground":           $accent,
+                  "editorLineNumber.foreground":       $muted,
+                  "editorLineNumber.activeForeground": $fg,
+                  "editorIndentGuide.background1":     $muted,
+                  "editorGroupHeader.tabsBackground":  $programBg,
+                  "tab.activeBackground":              $dark,
+                  "tab.inactiveBackground":            $programBg,
+                  "tab.activeForeground":              $fg,
+                  "tab.inactiveForeground":            $muted,
+                  "activityBar.background":            $programBg,
+                  "activityBar.foreground":            $fg,
+                  "activityBar.activeBorder":          $primary,
+                  "sideBar.background":                $programBg,
+                  "sideBar.foreground":                $fg,
+                  "sideBarTitle.foreground":           $primary,
+                  "statusBar.background":              $dark,
+                  "statusBar.foreground":              $fg,
+                  "statusBar.noFolderBackground":      $dark,
+                  "titleBar.activeBackground":         $programBg,
+                  "titleBar.activeForeground":         $fg,
+                  "titleBar.inactiveBackground":       $programBg,
+                  "panel.background":                  $programBg,
+                  "panelTitle.activeForeground":       $primary,
+                  "terminal.background":               $bg,
+                  "terminal.foreground":               $fg,
+                  "terminal.ansiBlack":                $dark,
+                  "terminal.ansiRed":                  $danger,
+                  "terminal.ansiGreen":                $success,
+                  "terminal.ansiYellow":               $warning,
+                  "terminal.ansiBlue":                 $primary,
+                  "terminal.ansiMagenta":              $secondary,
+                  "terminal.ansiCyan":                 $info,
+                  "terminal.ansiWhite":                $white,
+                  "focusBorder":                       $primary,
+                  "selection.background":              $muted,
+                  "input.background":                  $programBg,
+                  "input.foreground":                  $fg,
+                  "input.border":                      $muted,
+                  "inputOption.activeBorder":          $primary,
+                  "list.activeSelectionBackground":    $dark,
+                  "list.activeSelectionForeground":    $fg,
+                  "list.hoverBackground":              $dark,
+                  "scrollbarSlider.background":        $muted,
+                  "scrollbarSlider.hoverBackground":   $primary,
+                  "button.background":                 $primary,
+                  "button.foreground":                 $bg,
+                  "badge.background":                  $primary,
+                  "badge.foreground":                  $bg,
+                  "progressBar.background":            $primary
+                } |
+                .["editor.tokenColorCustomizations"] = {
+                  "comments":  $muted,
+                  "keywords":  $primary,
+                  "functions": $secondary,
+                  "strings":   $success,
+                  "numbers":   $warning,
+                  "types":     $tertiary,
+                  "variables": $fg
+                }
+                ' "$settings_file" > "$tmp"
+              mv "$tmp" "$settings_file"
+              log "Rendered VSCode settings → $settings_file"
+            }
+
             render_wallpaper() {
               local source_file="$HOME/.config/palettes/wallpaper-source.png"
               local out="$HOME/.local/share/wallpaper.png"
@@ -442,6 +537,10 @@ let
               fi
             }
 
+            reload_vscode() {
+              log "VSCode has no live-reload signal – open VSCode and run 'Developer: Reload Window' to apply the new theme"
+            }
+
             # ── Apply all modules ─────────────────────────────────────────────────
 
             apply_all() {
@@ -454,12 +553,14 @@ let
               render_hyprland  || log_err "Hyprland render failed"
               render_neovim    || log_err "Neovim render failed"
               render_wofi      || log_err "Wofi render failed"
+              render_vscode    || log_err "VSCode render failed"
               render_wallpaper || true
 
               reload_ghostty   || true
               reload_waybar    || true
               reload_hyprland  || true
               reload_neovim    || true
+              reload_vscode    || true
               reload_wallpaper || true
             }
 
