@@ -579,31 +579,30 @@ let
                 log "code CLI not found – skipping VSCode reload"
                 return 0
               fi
-              # Locate the IPC socket of the already-running VSCode instance.
-              # Without VSCODE_IPC_HOOK_CLI, `code --command` spawns a *new*
-              # window instead of targeting the existing one.
+              # Each running VSCode window has its own IPC socket under
+              # /run/user/$UID/vscode-ipc-*.sock.  Without VSCODE_IPC_HOOK_CLI,
+              # `code --command` spawns a *new* window instead of targeting an
+              # existing one.  Iterate over every socket so all open windows are
+              # reloaded (mirrors how reload_neovim handles multiple instances).
               local runtime_dir="/run/user/$(id -u)"
               if [[ ! -d "$runtime_dir" ]]; then
                 log "Runtime directory $runtime_dir not found – skipping VSCode reload"
                 return 0
               fi
-              local sock
-              # Sort by modification time (newest first) so that if multiple
-              # VSCode instances are open we target the most recently used one.
-              sock=$(find "$runtime_dir" -maxdepth 1 \
-                          -name "vscode-ipc-*.sock" \
-                          -printf '%T@ %p\n' 2>/dev/null \
-                     | sort -rn \
-                     | awk 'NR==1{sub(/^[^ ]+ /,""); print}')
-              if [[ -z "$sock" ]]; then
-                log "VSCode not running (no IPC socket found) – skipping reload"
-                return 0
-              fi
-              if VSCODE_IPC_HOOK_CLI="$sock" \
-                   code --command workbench.action.reloadWindow 2>/dev/null; then
-                log "Reloaded VSCode window"
+              local reloaded=0
+              while IFS= read -r sock; do
+                [[ -S "$sock" ]] || continue
+                if VSCODE_IPC_HOOK_CLI="$sock" \
+                     code --command workbench.action.reloadWindow 2>/dev/null; then
+                  reloaded=$((reloaded + 1))
+                else
+                  log_err "Failed to reload VSCode window via socket: $sock"
+                fi
+              done < <(find "$runtime_dir" -maxdepth 1 -name "vscode-ipc-*.sock" 2>/dev/null)
+              if [[ $reloaded -gt 0 ]]; then
+                log "Reloaded $reloaded VSCode window(s)"
               else
-                log_err "Failed to reload VSCode window"
+                log "No running VSCode windows found (no IPC sockets) – skipping reload"
               fi
             }
 
