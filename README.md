@@ -17,6 +17,7 @@ A modular NixOS configuration flake for the `luftmyszor` host. The setup uses **
   - [Active Palette](#active-palette)
   - [Live Theme Switcher (`theme-switch`)](#live-theme-switcher-theme-switch)
   - [Runtime Palette Switching (`palette-switch`)](#runtime-palette-switching-no-rebuild-needed)
+  - [Wofi Theme Picker (`wofi-theme-switch`)](#wofi-theme-picker-wofi-theme-switch)
   - [Color Keys](#color-keys)
   - [Palette Catalogue](#palette-catalogue)
   - [Using Palette Colors](#using-palette-colors)
@@ -192,7 +193,7 @@ modules.editors.vscode.enable          = true;
 
 | Module | Option | Description |
 |---|---|---|
-| palette-switcher | `modules.themes.palette-switcher.enable` | Runtime palette switcher — deploys palette JSON files, installs `palette-switch` and `palette-wallpaper` scripts, and generates module configs on activation |
+| palette-switcher | `modules.themes.palette-switcher.enable` | Runtime palette switcher — deploys palette JSON files, installs `palette-switch`, `palette-wallpaper`, and `wofi-theme-switch` scripts, and generates module configs on activation |
 
 `palette-switcher` also exposes a `defaultPalette` option:
 
@@ -308,7 +309,7 @@ palette-switch apply
 
 | Module | Config generated | Reload hook |
 |---|---|---|
-| **Ghostty** | `~/.config/ghostty/colors.conf` | New windows pick up colors automatically |
+| **Ghostty** | `~/.config/ghostty/colors.conf` | `pkill -SIGUSR2 ghostty` |
 | **Waybar** | `~/.config/waybar/normal-style.css` | `pkill -SIGUSR2 waybar` |
 | **Hyprland** | `~/.config/hypr/palette-colors.conf` | `hyprctl reload` |
 | **Neovim** | `~/.config/nvim/lua/palette-colors.lua` | Running instances signaled via socket |
@@ -335,6 +336,29 @@ palette-switch nord
 ```
 
 The rendered wallpaper is saved to `~/.local/share/wallpaper.png` and passed to `swww img` automatically if `swww` is running.
+
+---
+
+### Wofi Theme Picker (`wofi-theme-switch`)
+
+`wofi-theme-switch` is a graphical palette picker that opens a **wofi dmenu** listing all available palettes. The currently active palette is marked with `(active)`. Selecting an entry immediately applies the chosen theme by calling `palette-switch`.
+
+It is installed as part of the `palette-switcher` module alongside `palette-switch` and `palette-wallpaper`.
+
+#### Usage
+
+```bash
+# Launch the wofi dmenu palette picker
+wofi-theme-switch
+```
+
+#### How it works
+
+1. Reads all `*.json` files from `~/.config/palettes/` (excluding `active.json`).
+2. Marks the currently active palette (resolved from the `active.json` symlink) with `(active)`.
+3. Displays the list in a **wofi `--dmenu`** prompt titled *"Switch Theme"*.
+4. On selection, strips the `(active)` suffix and delegates to `palette-switch <name>` to apply the theme.
+5. If the picker is dismissed without a selection, exits silently.
 
 ---
 
