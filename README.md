@@ -31,6 +31,9 @@ nixConfig/
 ├── flake.nix                  # Flake entry point – system configs & dev shells
 ├── flake.lock                 # Pinned input versions
 │
+├── bin/
+│   └── theme-switch           # Live theme switcher script (also installed via HM)
+│
 ├── hosts/
 │   └── default/
 │       ├── configuration.nix  # System-level NixOS options & module toggles
@@ -203,6 +206,59 @@ modules.editors.vscode.enable          = true;
 `modules/themes/palette.nix` is the **static palette** used at Nix-build time (for modules that still reference it, such as `wofi`). It is imported in `flake.nix` and passed as a special argument (`palette`) to every module that needs it at build time.
 
 The current build-time theme is **Tokyo Night**. To change the build-time theme you still replace the contents of `palette.nix` with any file from `palleteCatalogue/` and rebuild.
+
+---
+
+### Live Theme Switcher (`theme-switch`)
+
+`theme-switch` is a high-performance runtime switcher that reads directly from the
+palette catalogue (`.nix` files) instead of the pre-deployed JSON snapshots used
+by `palette-switch`.  No NixOS/Home Manager rebuild is needed after switching.
+
+#### How it works
+
+1. After `home-manager switch` two stable symlinks exist:
+   - `~/.config/theme/palette.json` → `~/.cache/theme/current/palette.json`
+   - `~/.config/theme/palette.css`  → `~/.cache/theme/current/palette.css`
+2. On first activation the cache files are seeded from the build-time palette
+   (`~/nixTheme/palette.{json,css}`).
+3. Running `theme-switch <name>` atomically updates both cache files in-place,
+   so anything reading `~/.config/theme/` sees the new theme immediately.
+
+#### Usage
+
+```bash
+# List available themes (reads from the palette catalogue)
+theme-switch list
+
+# Switch to a theme and reload running apps
+theme-switch nord
+theme-switch gruvbox
+theme-switch tokyo-night
+theme-switch everforest
+
+# Override the catalogue directory (useful for testing a custom palette)
+THEME_CATALOGUE_DIR=~/my-palettes theme-switch my-theme
+```
+
+#### What it updates
+
+| File | Description |
+|---|---|
+| `~/.cache/theme/current/palette.json` | JSON object with all palette keys |
+| `~/.cache/theme/current/palette.css`  | CSS custom-properties (`:root { --key: value; }`) |
+| `~/.cache/theme/current.theme`        | Plain-text file recording the active theme name |
+
+#### Reload hooks (best-effort)
+
+| Program | Signal / command |
+|---|---|
+| **waybar** | `pkill -USR2 waybar` |
+| **hyprland** | `hyprctl reload` |
+| **sway** | `swaymsg reload` |
+
+Missing programs are silently skipped — `theme-switch` never exits non-zero due
+to a program not running.
 
 ---
 
