@@ -1,15 +1,20 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 let
   cfg = config.modules.themes.palette-switcher;
 
   # ── Import palette data from the existing Nix catalogue ───────────────────
-  tokyoNight  = import ../palleteCatalogue/tokyo-night.nix;
-  gruvbox     = import ../palleteCatalogue/gruvebox.nix;
-  nord        = import ../palleteCatalogue/nord.nix;
-  everforest  = import ../palleteCatalogue/everforest.nix;
-  catppuccin  = (import ../palleteCatalogue/palette.nix) // {
-    name        = "catppuccin";
+  tokyoNight = import ../palleteCatalogue/tokyo-night.nix;
+  gruvbox = import ../palleteCatalogue/gruvebox.nix;
+  nord = import ../palleteCatalogue/nord.nix;
+  everforest = import ../palleteCatalogue/everforest.nix;
+  catppuccin = (import ../palleteCatalogue/palette.nix) // {
+    name = "catppuccin";
     description = "Catppuccin Mocha-inspired palette";
   };
 
@@ -21,442 +26,445 @@ let
     name = "palette-wallpaper";
     runtimeInputs = [ (pkgs.python3.withPackages (ps: [ ps.pillow ])) ];
     text = ''
-      if [[ $# -lt 1 ]]; then
-        echo "Usage: palette-wallpaper <input.png> [output.png]" >&2
-        exit 1
-      fi
-      python3 - "$@" <<'PYEOF'
-import sys, os, json
-from PIL import Image
+            if [[ $# -lt 1 ]]; then
+              echo "Usage: palette-wallpaper <input.png> [output.png]" >&2
+              exit 1
+            fi
+            python3 - "$@" <<'PYEOF'
+      import sys, os, json
+      from PIL import Image
 
-def hex_to_rgb(h):
-    h = h.lstrip('#')
-    return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
+      def hex_to_rgb(h):
+          h = h.lstrip('#')
+          return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
 
-input_path  = sys.argv[1]
-output_path = sys.argv[2] if len(sys.argv) > 2 else os.path.expanduser("~/.local/share/wallpaper.png")
+      input_path  = sys.argv[1]
+      output_path = sys.argv[2] if len(sys.argv) > 2 else os.path.expanduser("~/.local/share/wallpaper.png")
 
-palette_path = os.environ.get("PALETTE_FILE",
-               os.path.expanduser("~/.config/palettes/active.json"))
-if not os.path.isfile(palette_path):
-    print(f"[palette-wallpaper] ERROR: palette file not found: {palette_path}", file=sys.stderr)
-    sys.exit(1)
+      palette_path = os.environ.get("PALETTE_FILE",
+                     os.path.expanduser("~/.config/palettes/active.json"))
+      if not os.path.isfile(palette_path):
+          print(f"[palette-wallpaper] ERROR: palette file not found: {palette_path}", file=sys.stderr)
+          sys.exit(1)
 
-with open(palette_path) as f:
-    palette = json.load(f)
+      with open(palette_path) as f:
+          palette = json.load(f)
 
-primary   = hex_to_rgb(palette["primary"])
-secondary = hex_to_rgb(palette["secondary"])
-bg        = hex_to_rgb(palette["bg"])
+      primary   = hex_to_rgb(palette["primary"])
+      secondary = hex_to_rgb(palette["secondary"])
+      bg        = hex_to_rgb(palette["bg"])
 
-img = Image.open(input_path).convert("RGBA")
-w, h = img.size
+      img = Image.open(input_path).convert("RGBA")
+      w, h = img.size
 
-# Build a 1-pixel-wide vertical gradient strip, then tile to full width.
-gradient = Image.new("RGB", (1, h))
-for y in range(h):
-    t = y / max(h - 1, 1)
-    r = round(primary[0] + (secondary[0] - primary[0]) * t)
-    g = round(primary[1] + (secondary[1] - primary[1]) * t)
-    b = round(primary[2] + (secondary[2] - primary[2]) * t)
-    gradient.putpixel((0, y), (r, g, b))
-gradient = gradient.resize((w, h), Image.NEAREST)
+      # Build a 1-pixel-wide vertical gradient strip, then tile to full width.
+      gradient = Image.new("RGB", (1, h))
+      for y in range(h):
+          t = y / max(h - 1, 1)
+          r = round(primary[0] + (secondary[0] - primary[0]) * t)
+          g = round(primary[1] + (secondary[1] - primary[1]) * t)
+          b = round(primary[2] + (secondary[2] - primary[2]) * t)
+          gradient.putpixel((0, y), (r, g, b))
+      gradient = gradient.resize((w, h), Image.NEAREST)
 
-# Solid background layer.
-background = Image.new("RGB", (w, h), bg)
+      # Solid background layer.
+      background = Image.new("RGB", (w, h), bg)
 
-# Composite: alpha=255 (non-empty pixel) → gradient colour
-#            alpha=0   (empty pixel)     → bg colour
-_, _, _, alpha = img.split()
-out = Image.composite(gradient, background, alpha)
+      # Composite: alpha=255 (non-empty pixel) → gradient colour
+      #            alpha=0   (empty pixel)     → bg colour
+      _, _, _, alpha = img.split()
+      out = Image.composite(gradient, background, alpha)
 
-os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-out.save(output_path)
-print(f"[palette-wallpaper] Saved → {output_path}")
-PYEOF
+      os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+      out.save(output_path)
+      print(f"[palette-wallpaper] Saved → {output_path}")
+      PYEOF
     '';
   };
 
   # ── palette-switch script ─────────────────────────────────────────────────
   paletteSwitchScript = pkgs.writeShellApplication {
     name = "palette-switch";
-    runtimeInputs = [ pkgs.jq paletteWallpaperScript ];
+    runtimeInputs = [
+      pkgs.jq
+      paletteWallpaperScript
+    ];
     text = ''
-      PALETTES_DIR="$HOME/.config/palettes"
-      ACTIVE_LINK="$PALETTES_DIR/active.json"
+            PALETTES_DIR="$HOME/.config/palettes"
+            ACTIVE_LINK="$PALETTES_DIR/active.json"
 
-      log()     { echo "[palette-switch] $*"; }
-      log_err() { echo "[palette-switch] ERROR: $*" >&2; }
+            log()     { echo "[palette-switch] $*"; }
+            log_err() { echo "[palette-switch] ERROR: $*" >&2; }
 
-      # ── Helpers ──────────────────────────────────────────────────────────
-      load_palette() {
-        if [[ ! -f "$ACTIVE_LINK" ]]; then
-          log_err "No active palette found at $ACTIVE_LINK"
-          log_err "Run: palette-switch <name>  (e.g. palette-switch tokyo-night)"
-          exit 1
-        fi
-        bg=$(jq -r '.bg'            "$ACTIVE_LINK")
-        programBg=$(jq -r '.programBg'    "$ACTIVE_LINK")
-        fg=$(jq -r '.fg'            "$ACTIVE_LINK")
-        primary=$(jq -r '.primary'       "$ACTIVE_LINK")
-        secondary=$(jq -r '.secondary'     "$ACTIVE_LINK")
-        tertiary=$(jq -r '.tertiary'      "$ACTIVE_LINK")
-        accent=$(jq -r '.accent'        "$ACTIVE_LINK")
-        danger=$(jq -r '.danger'        "$ACTIVE_LINK")
-        warning=$(jq -r '.warning'       "$ACTIVE_LINK")
-        success=$(jq -r '.success'       "$ACTIVE_LINK")
-        info=$(jq -r '.info'          "$ACTIVE_LINK")
-        black=$(jq -r '.black'         "$ACTIVE_LINK")
-        dark=$(jq -r '.dark'          "$ACTIVE_LINK")
-        muted=$(jq -r '.muted'         "$ACTIVE_LINK")
-        light=$(jq -r '.light'         "$ACTIVE_LINK")
-        white=$(jq -r '.white'         "$ACTIVE_LINK")
+            # ── Helpers ──────────────────────────────────────────────────────────
+            load_palette() {
+              if [[ ! -f "$ACTIVE_LINK" ]]; then
+                log_err "No active palette found at $ACTIVE_LINK"
+                log_err "Run: palette-switch <name>  (e.g. palette-switch tokyo-night)"
+                exit 1
+              fi
+              bg=$(jq -r '.bg'            "$ACTIVE_LINK")
+              programBg=$(jq -r '.programBg'    "$ACTIVE_LINK")
+              fg=$(jq -r '.fg'            "$ACTIVE_LINK")
+              primary=$(jq -r '.primary'       "$ACTIVE_LINK")
+              secondary=$(jq -r '.secondary'     "$ACTIVE_LINK")
+              tertiary=$(jq -r '.tertiary'      "$ACTIVE_LINK")
+              accent=$(jq -r '.accent'        "$ACTIVE_LINK")
+              danger=$(jq -r '.danger'        "$ACTIVE_LINK")
+              warning=$(jq -r '.warning'       "$ACTIVE_LINK")
+              success=$(jq -r '.success'       "$ACTIVE_LINK")
+              info=$(jq -r '.info'          "$ACTIVE_LINK")
+              black=$(jq -r '.black'         "$ACTIVE_LINK")
+              dark=$(jq -r '.dark'          "$ACTIVE_LINK")
+              muted=$(jq -r '.muted'         "$ACTIVE_LINK")
+              light=$(jq -r '.light'         "$ACTIVE_LINK")
+              white=$(jq -r '.white'         "$ACTIVE_LINK")
+            }
+
+            # ── Module renderers ─────────────────────────────────────────────────
+
+            render_ghostty() {
+              load_palette
+              local out="$HOME/.config/ghostty/colors.conf"
+              mkdir -p "$(dirname "$out")"
+              cat > "$out" <<GHOSTTY_EOF
+      # Generated by palette-switch – do not edit by hand
+      palette = 0=$black
+      palette = 1=$danger
+      palette = 2=$success
+      palette = 3=$warning
+      palette = 4=$primary
+      palette = 5=$secondary
+      palette = 6=$info
+      palette = 7=$light
+      palette = 8=$muted
+      palette = 9=$danger
+      palette = 10=$success
+      palette = 11=$warning
+      palette = 12=$primary
+      palette = 13=$secondary
+      palette = 14=$info
+      palette = 15=$white
+      background = $programBg
+      foreground = $fg
+      cursor-color = $accent
+      cursor-text = $fg
+      selection-background = $muted
+      selection-foreground = $fg
+      GHOSTTY_EOF
+              log "Rendered Ghostty colors → $out"
+            }
+
+            render_waybar() {
+              load_palette
+              local css_dir="$HOME/.config/waybar"
+              mkdir -p "$css_dir"
+              cat > "$css_dir/normal-style.css" <<CSS_EOF
+      /* Generated by palette-switch – do not edit by hand */
+
+      window#waybar {
+        background-color: $bg;
+        color: $fg;
+        border: 5px solid $primary;
+        border-top: hidden;
+        border-radius: 0px 0px 30px 30px;
       }
 
-      # ── Module renderers ─────────────────────────────────────────────────
-
-      render_ghostty() {
-        load_palette
-        local out="$HOME/.config/ghostty/colors.conf"
-        mkdir -p "$(dirname "$out")"
-        cat > "$out" <<GHOSTTY_EOF
-# Generated by palette-switch – do not edit by hand
-palette = 0=$black
-palette = 1=$danger
-palette = 2=$success
-palette = 3=$warning
-palette = 4=$primary
-palette = 5=$secondary
-palette = 6=$info
-palette = 7=$light
-palette = 8=$muted
-palette = 9=$danger
-palette = 10=$success
-palette = 11=$warning
-palette = 12=$primary
-palette = 13=$secondary
-palette = 14=$info
-palette = 15=$white
-background = $programBg
-foreground = $fg
-cursor-color = $accent
-cursor-text = $fg
-selection-background = $muted
-selection-foreground = $fg
-GHOSTTY_EOF
-        log "Rendered Ghostty colors → $out"
+      box {
+        transition: 1s;
+        margin-top: 0px;
       }
 
-      render_waybar() {
-        load_palette
-        local css_dir="$HOME/.config/waybar"
-        mkdir -p "$css_dir"
-        cat > "$css_dir/normal-style.css" <<CSS_EOF
-/* Generated by palette-switch – do not edit by hand */
-
-window#waybar {
-  background-color: $bg;
-  color: $fg;
-  border: 5px solid $primary;
-  border-top: hidden;
-  border-radius: 0px 0px 30px 30px;
-}
-
-box {
-  transition: 1s;
-  margin-top: 0px;
-}
-
-label.module {
-  margin: 10px 10px;
-  transition: 1s;
-}
-
-#custom-spacer {
-  padding: 0px 30px;
-}
-
-@keyframes drop {
-  from { margin-top: 0; }
-  to   { margin-top: 300px; }
-}
-
-.module {
-  margin-top: 0px;
-  animation: 0.05s linear drop;
-  background-color: $secondary;
-}
-CSS_EOF
-        log "Rendered Waybar CSS → $css_dir/normal-style.css"
-
-        # Ensure style.css points somewhere sensible
-        local style="$css_dir/style.css"
-        local moved="$css_dir/moved-style.css"
-        if [[ -L "$style" && "$(readlink "$style")" == *"moved-style.css"* && -e "$moved" ]]; then
-          : # keep pointing at moved-style.css
-        else
-          ln -sf "$css_dir/normal-style.css" "$style"
-        fi
+      label.module {
+        margin: 10px 10px;
+        transition: 1s;
       }
 
-      render_hyprland() {
-        load_palette
-        local out="$HOME/.config/hypr/palette-colors.conf"
-        mkdir -p "$(dirname "$out")"
-        # Strip leading '#' for Hyprland's rgb() format
-        local bg_hex fg_hex primary_hex secondary_hex tertiary_hex muted_hex danger_hex
-        bg_hex=$(echo "$bg" | tr -d '#')
-        fg_hex=$(echo "$fg" | tr -d '#')
-        primary_hex=$(echo "$primary" | tr -d '#')
-        secondary_hex=$(echo "$secondary" | tr -d '#')
-        tertiary_hex=$(echo "$tertiary" | tr -d '#')
-        muted_hex=$(echo "$muted" | tr -d '#')
-        danger_hex=$(echo "$danger" | tr -d '#')
-        cat > "$out" <<HYPR_EOF
-# Generated by palette-switch – do not edit by hand
-\$paletteBg        = rgb($bg_hex)
-\$paletteFg        = rgb($fg_hex)
-\$palettePrimary   = rgb($primary_hex)
-\$paletteSecondary = rgb($secondary_hex)
-\$paletteTertiary  = rgb($tertiary_hex)
-\$paletteMuted     = rgb($muted_hex)
-\$paletteDanger    = rgb($danger_hex)
-HYPR_EOF
-        log "Rendered Hyprland palette → $out"
+      #custom-spacer {
+        padding: 0px 30px;
       }
 
-      render_neovim() {
-        load_palette
-        local out="$HOME/.config/nvim/lua/palette-colors.lua"
-        mkdir -p "$(dirname "$out")"
-        cat > "$out" <<LUA_EOF
--- Generated by palette-switch – do not edit by hand
--- Add  require('palette-colors').apply()  to your init.lua to use these colors
-local M = {}
-
-M.colors = {
-  bg           = "$bg",
-  programBg    = "$programBg",
-  fg           = "$fg",
-  primary      = "$primary",
-  secondary    = "$secondary",
-  tertiary     = "$tertiary",
-  accent       = "$accent",
-  danger       = "$danger",
-  warning      = "$warning",
-  success      = "$success",
-  info         = "$info",
-  black        = "$black",
-  dark         = "$dark",
-  muted        = "$muted",
-  light        = "$light",
-  white        = "$white",
-}
-
-function M.apply()
-  local c = M.colors
-  vim.api.nvim_set_hl(0, "Normal",      { fg = c.fg,      bg = c.bg })
-  vim.api.nvim_set_hl(0, "NormalFloat", { fg = c.fg,      bg = c.programBg })
-  vim.api.nvim_set_hl(0, "Comment",     { fg = c.muted,   italic = true })
-  vim.api.nvim_set_hl(0, "Keyword",     { fg = c.primary, bold   = true })
-  vim.api.nvim_set_hl(0, "Function",    { fg = c.secondary })
-  vim.api.nvim_set_hl(0, "String",      { fg = c.success })
-  vim.api.nvim_set_hl(0, "Number",      { fg = c.warning })
-  vim.api.nvim_set_hl(0, "Error",       { fg = c.danger,  bold   = true })
-  vim.api.nvim_set_hl(0, "StatusLine",  { fg = c.fg,      bg = c.dark })
-  vim.api.nvim_set_hl(0, "LineNr",      { fg = c.muted })
-  vim.api.nvim_set_hl(0, "CursorLine",  { bg = c.dark })
-  vim.api.nvim_set_hl(0, "Visual",      { bg = c.muted })
-  vim.api.nvim_set_hl(0, "Pmenu",       { fg = c.fg,      bg = c.programBg })
-  vim.api.nvim_set_hl(0, "PmenuSel",    { fg = c.bg,      bg = c.primary })
-end
-
-return M
-LUA_EOF
-        log "Rendered Neovim palette → $out"
+      @keyframes drop {
+        from { margin-top: 0; }
+        to   { margin-top: 300px; }
       }
 
-      render_wallpaper() {
-        local source_file="$HOME/.config/palettes/wallpaper-source.png"
-        local out="$HOME/.local/share/wallpaper.png"
-        if [[ ! -f "$source_file" ]]; then
-          log "No wallpaper source at $source_file – skipping"
-          log "(place a PNG there to enable palette-coloured wallpapers)"
-          return 0
-        fi
-        if palette-wallpaper "$source_file" "$out"; then
-          log "Rendered wallpaper → $out"
-        else
-          log_err "palette-wallpaper failed – check that $source_file is a valid PNG"
-          return 1
-        fi
+      .module {
+        margin-top: 0px;
+        animation: 0.05s linear drop;
+        background-color: $secondary;
+      }
+      CSS_EOF
+              log "Rendered Waybar CSS → $css_dir/normal-style.css"
+
+              # Ensure style.css points somewhere sensible
+              local style="$css_dir/style.css"
+              local moved="$css_dir/moved-style.css"
+              if [[ -L "$style" && "$(readlink "$style")" == *"moved-style.css"* && -e "$moved" ]]; then
+                : # keep pointing at moved-style.css
+              else
+                ln -sf "$css_dir/normal-style.css" "$style"
+              fi
+            }
+
+            render_hyprland() {
+              load_palette
+              local out="$HOME/.config/hypr/palette-colors.conf"
+              mkdir -p "$(dirname "$out")"
+              # Strip leading '#' for Hyprland's rgb() format
+              local bg_hex fg_hex primary_hex secondary_hex tertiary_hex muted_hex danger_hex
+              bg_hex=$(echo "$bg" | tr -d '#')
+              fg_hex=$(echo "$fg" | tr -d '#')
+              primary_hex=$(echo "$primary" | tr -d '#')
+              secondary_hex=$(echo "$secondary" | tr -d '#')
+              tertiary_hex=$(echo "$tertiary" | tr -d '#')
+              muted_hex=$(echo "$muted" | tr -d '#')
+              danger_hex=$(echo "$danger" | tr -d '#')
+              cat > "$out" <<HYPR_EOF
+      # Generated by palette-switch – do not edit by hand
+      \$paletteBg        = rgb($bg_hex)
+      \$paletteFg        = rgb($fg_hex)
+      \$palettePrimary   = rgb($primary_hex)
+      \$paletteSecondary = rgb($secondary_hex)
+      \$paletteTertiary  = rgb($tertiary_hex)
+      \$paletteMuted     = rgb($muted_hex)
+      \$paletteDanger    = rgb($danger_hex)
+      HYPR_EOF
+              log "Rendered Hyprland palette → $out"
+            }
+
+            render_neovim() {
+              load_palette
+              local out="$HOME/.config/nvim/lua/palette-colors.lua"
+              mkdir -p "$(dirname "$out")"
+              cat > "$out" <<LUA_EOF
+      -- Generated by palette-switch – do not edit by hand
+      -- Add  require('palette-colors').apply()  to your init.lua to use these colors
+      local M = {}
+
+      M.colors = {
+        bg           = "$bg",
+        programBg    = "$programBg",
+        fg           = "$fg",
+        primary      = "$primary",
+        secondary    = "$secondary",
+        tertiary     = "$tertiary",
+        accent       = "$accent",
+        danger       = "$danger",
+        warning      = "$warning",
+        success      = "$success",
+        info         = "$info",
+        black        = "$black",
+        dark         = "$dark",
+        muted        = "$muted",
+        light        = "$light",
+        white        = "$white",
       }
 
-      # ── Reload hooks ─────────────────────────────────────────────────────
+      function M.apply()
+        local c = M.colors
+        vim.api.nvim_set_hl(0, "Normal",      { fg = c.fg,      bg = c.bg })
+        vim.api.nvim_set_hl(0, "NormalFloat", { fg = c.fg,      bg = c.programBg })
+        vim.api.nvim_set_hl(0, "Comment",     { fg = c.muted,   italic = true })
+        vim.api.nvim_set_hl(0, "Keyword",     { fg = c.primary, bold   = true })
+        vim.api.nvim_set_hl(0, "Function",    { fg = c.secondary })
+        vim.api.nvim_set_hl(0, "String",      { fg = c.success })
+        vim.api.nvim_set_hl(0, "Number",      { fg = c.warning })
+        vim.api.nvim_set_hl(0, "Error",       { fg = c.danger,  bold   = true })
+        vim.api.nvim_set_hl(0, "StatusLine",  { fg = c.fg,      bg = c.dark })
+        vim.api.nvim_set_hl(0, "LineNr",      { fg = c.muted })
+        vim.api.nvim_set_hl(0, "CursorLine",  { bg = c.dark })
+        vim.api.nvim_set_hl(0, "Visual",      { bg = c.muted })
+        vim.api.nvim_set_hl(0, "Pmenu",       { fg = c.fg,      bg = c.programBg })
+        vim.api.nvim_set_hl(0, "PmenuSel",    { fg = c.bg,      bg = c.primary })
+      end
 
-      reload_waybar() {
-        if pgrep -x waybar > /dev/null 2>&1; then
-          if pkill -SIGUSR2 waybar; then
-            log "Reloaded Waybar"
-          else
-            log_err "Failed to signal Waybar"
-          fi
-        else
-          log "Waybar not running – skipping reload"
-        fi
-      }
+      return M
+      LUA_EOF
+              log "Rendered Neovim palette → $out"
+            }
 
-      reload_hyprland() {
-        if command -v hyprctl > /dev/null 2>&1; then
-          if hyprctl version > /dev/null 2>&1; then
-            if hyprctl reload; then
-              log "Reloaded Hyprland"
-            else
-              log_err "Failed to reload Hyprland"
-            fi
-          else
-            log "Hyprland not running – skipping reload"
-          fi
-        else
-          log "hyprctl not found – skipping Hyprland reload"
-        fi
-      }
+            render_wallpaper() {
+              local source_file="$HOME/.config/palettes/wallpaper-source.png"
+              local out="$HOME/.local/share/wallpaper.png"
+              if [[ ! -f "$source_file" ]]; then
+                log "No wallpaper source at $source_file – skipping"
+                log "(place a PNG there to enable palette-coloured wallpapers)"
+                return 0
+              fi
+              if palette-wallpaper "$source_file" "$out"; then
+                log "Rendered wallpaper → $out"
+              else
+                log_err "palette-wallpaper failed – check that $source_file is a valid PNG"
+                return 1
+              fi
+            }
 
-      reload_neovim() {
-        local reloaded=0
-        for sock in /tmp/nvim*.sock /run/user/"$(id -u)"/nvim*.sock; do
-          [[ -S "$sock" ]] || continue
-          if nvim --server "$sock" \
-               --remote-send ':lua pcall(function() require("palette-colors").apply() end)<CR>'; then
-            reloaded=$((reloaded + 1))
-          else
-            log_err "Failed to signal Neovim socket: $sock"
-          fi
-        done
-        if [[ $reloaded -gt 0 ]]; then
-          log "Signaled $reloaded Neovim instance(s)"
-        else
-          log "No running Neovim instances found"
-        fi
-      }
+            # ── Reload hooks ─────────────────────────────────────────────────────
 
-      reload_ghostty() {
-        if pgrep -x ghostty > /dev/null 2>&1; then
-          if pkill -SIGUSR2 ghostty; then
-            log "Reloaded Ghostty"
-          else
-            log_err "Failed to signal Ghostty"
-          fi
-        else
-          log "Ghostty not running – skipping reload"
-        fi
-      }
+            reload_waybar() {
+              if pgrep -x waybar > /dev/null 2>&1; then
+                if pkill -SIGUSR2 waybar; then
+                  log "Reloaded Waybar"
+                else
+                  log_err "Failed to signal Waybar"
+                fi
+              else
+                log "Waybar not running – skipping reload"
+              fi
+            }
 
-      reload_wallpaper() {
-        local out="$HOME/.local/share/wallpaper.png"
-        [[ -f "$out" ]] || return 0
-        if command -v swww > /dev/null 2>&1; then
-          if swww query > /dev/null 2>&1; then
-            if swww img "$out"; then
-              log "Set wallpaper via swww"
-            else
-              log_err "Failed to set wallpaper via swww"
-            fi
-          else
-            log "swww not running – skipping wallpaper apply"
-          fi
-        else
-          log "swww not found – skipping wallpaper apply"
-        fi
-      }
+            reload_hyprland() {
+              if command -v hyprctl > /dev/null 2>&1; then
+                if hyprctl version > /dev/null 2>&1; then
+                  if hyprctl reload; then
+                    log "Reloaded Hyprland"
+                  else
+                    log_err "Failed to reload Hyprland"
+                  fi
+                else
+                  log "Hyprland not running – skipping reload"
+                fi
+              else
+                log "hyprctl not found – skipping Hyprland reload"
+              fi
+            }
 
-      # ── Apply all modules ─────────────────────────────────────────────────
+            reload_neovim() {
+              local reloaded=0
+              for sock in /tmp/nvim*.sock /run/user/"$(id -u)"/nvim*.sock; do
+                [[ -S "$sock" ]] || continue
+                if nvim --server "$sock" \
+                     --remote-send ':lua pcall(function() require("palette-colors").apply() end)<CR>'; then
+                  reloaded=$((reloaded + 1))
+                else
+                  log_err "Failed to signal Neovim socket: $sock"
+                fi
+              done
+              if [[ $reloaded -gt 0 ]]; then
+                log "Signaled $reloaded Neovim instance(s)"
+              else
+                log "No running Neovim instances found"
+              fi
+            }
 
-      apply_all() {
-        local palette_name
-        palette_name=$(jq -r '.name // "unknown"' "$ACTIVE_LINK")
-        log "Applying palette: $palette_name"
+            reload_ghostty() {
+              if pgrep ghostty > /dev/null 2>&1; then
+                if pkill -SIGUSR2 ghostty; then
+                  log "Reloaded Ghostty"
+                else
+                  log_err "Failed to signal Ghostty"
+                fi
+              else
+                log "Ghostty not running – skipping reload"
+              fi
+            }
 
-        render_ghostty   || log_err "Ghostty render failed"
-        render_waybar    || log_err "Waybar render failed"
-        render_hyprland  || log_err "Hyprland render failed"
-        render_neovim    || log_err "Neovim render failed"
-        render_wallpaper || true
+            reload_wallpaper() {
+              local out="$HOME/.local/share/wallpaper.png"
+              [[ -f "$out" ]] || return 0
+              if command -v swww > /dev/null 2>&1; then
+                if swww query > /dev/null 2>&1; then
+                  if swww img "$out"; then
+                    log "Set wallpaper via swww"
+                  else
+                    log_err "Failed to set wallpaper via swww"
+                  fi
+                else
+                  log "swww not running – skipping wallpaper apply"
+                fi
+              else
+                log "swww not found – skipping wallpaper apply"
+              fi
+            }
 
-        reload_ghostty   || true
-        reload_waybar    || true
-        reload_hyprland  || true
-        reload_neovim    || true
-        reload_wallpaper || true
-      }
+            # ── Apply all modules ─────────────────────────────────────────────────
 
-      # ── Usage ─────────────────────────────────────────────────────────────
+            apply_all() {
+              local palette_name
+              palette_name=$(jq -r '.name // "unknown"' "$ACTIVE_LINK")
+              log "Applying palette: $palette_name"
 
-      usage() {
-        cat <<'USAGE_EOF'
-Usage: palette-switch <command>
+              render_ghostty   || log_err "Ghostty render failed"
+              render_waybar    || log_err "Waybar render failed"
+              render_hyprland  || log_err "Hyprland render failed"
+              render_neovim    || log_err "Neovim render failed"
+              render_wallpaper || true
 
-Commands:
-  list       List available palettes (active one marked with *)
-  apply      Re-render all module configs from the current active palette
-             and reload affected programs
-  wallpaper  Re-render and apply the wallpaper only
-             (reads ~/.config/palettes/wallpaper-source.png)
-  <name>     Switch to the named palette, render configs, and reload programs
+              reload_ghostty   || true
+              reload_waybar    || true
+              reload_hyprland  || true
+              reload_neovim    || true
+              reload_wallpaper || true
+            }
 
-Examples:
-  palette-switch list
-  palette-switch tokyo-night
-  palette-switch gruvbox
-  palette-switch wallpaper
-  palette-switch apply
-USAGE_EOF
-      }
+            # ── Usage ─────────────────────────────────────────────────────────────
 
-      # ── Main ──────────────────────────────────────────────────────────────
+            usage() {
+              cat <<'USAGE_EOF'
+      Usage: palette-switch <command>
 
-      cmd="''${1:-}"
-      case "$cmd" in
-        list)
-          if [[ ! -d "$PALETTES_DIR" ]]; then
-            log_err "Palettes directory not found: $PALETTES_DIR"
-            exit 1
-          fi
-          active_name=""
-          [[ -L "$ACTIVE_LINK" ]] && active_name=$(basename "$(readlink "$ACTIVE_LINK")" .json)
-          for f in "$PALETTES_DIR"/*.json; do
-            [[ -f "$f" ]] || continue
-            name=$(basename "$f" .json)
-            [[ "$name" == "active" ]] && continue
-            if [[ "$name" == "$active_name" ]]; then
-              echo "* $name (active)"
-            else
-              echo "  $name"
-            fi
-          done
-          ;;
-        apply)
-          apply_all
-          ;;
-        wallpaper)
-          render_wallpaper
-          reload_wallpaper
-          ;;
-        "")
-          usage
-          ;;
-        *)
-          palette_file="$PALETTES_DIR/$cmd.json"
-          if [[ ! -f "$palette_file" ]]; then
-            log_err "Palette '$cmd' not found in $PALETTES_DIR"
-            log_err "Use 'palette-switch list' to see available palettes"
-            exit 1
-          fi
-          ln -sf "$cmd.json" "$ACTIVE_LINK"
-          log "Switched active palette → $cmd"
-          apply_all
-          ;;
-      esac
+      Commands:
+        list       List available palettes (active one marked with *)
+        apply      Re-render all module configs from the current active palette
+                   and reload affected programs
+        wallpaper  Re-render and apply the wallpaper only
+                   (reads ~/.config/palettes/wallpaper-source.png)
+        <name>     Switch to the named palette, render configs, and reload programs
+
+      Examples:
+        palette-switch list
+        palette-switch tokyo-night
+        palette-switch gruvbox
+        palette-switch wallpaper
+        palette-switch apply
+      USAGE_EOF
+            }
+
+            # ── Main ──────────────────────────────────────────────────────────────
+
+            cmd="''${1:-}"
+            case "$cmd" in
+              list)
+                if [[ ! -d "$PALETTES_DIR" ]]; then
+                  log_err "Palettes directory not found: $PALETTES_DIR"
+                  exit 1
+                fi
+                active_name=""
+                [[ -L "$ACTIVE_LINK" ]] && active_name=$(basename "$(readlink "$ACTIVE_LINK")" .json)
+                for f in "$PALETTES_DIR"/*.json; do
+                  [[ -f "$f" ]] || continue
+                  name=$(basename "$f" .json)
+                  [[ "$name" == "active" ]] && continue
+                  if [[ "$name" == "$active_name" ]]; then
+                    echo "* $name (active)"
+                  else
+                    echo "  $name"
+                  fi
+                done
+                ;;
+              apply)
+                apply_all
+                ;;
+              wallpaper)
+                render_wallpaper
+                reload_wallpaper
+                ;;
+              "")
+                usage
+                ;;
+              *)
+                palette_file="$PALETTES_DIR/$cmd.json"
+                if [[ ! -f "$palette_file" ]]; then
+                  log_err "Palette '$cmd' not found in $PALETTES_DIR"
+                  log_err "Use 'palette-switch list' to see available palettes"
+                  exit 1
+                fi
+                ln -sf "$cmd.json" "$ACTIVE_LINK"
+                log "Switched active palette → $cmd"
+                apply_all
+                ;;
+            esac
     '';
   };
 
@@ -464,14 +472,17 @@ in
 lib.mkIf cfg.enable {
 
   # ── Deploy palette JSON files ──────────────────────────────────────────────
-  home.file.".config/palettes/tokyo-night.json".text  = builtins.toJSON tokyoNight;
-  home.file.".config/palettes/gruvbox.json".text      = builtins.toJSON gruvbox;
-  home.file.".config/palettes/nord.json".text         = builtins.toJSON nord;
-  home.file.".config/palettes/everforest.json".text   = builtins.toJSON everforest;
-  home.file.".config/palettes/catppuccin.json".text   = builtins.toJSON catppuccin;
+  home.file.".config/palettes/tokyo-night.json".text = builtins.toJSON tokyoNight;
+  home.file.".config/palettes/gruvbox.json".text = builtins.toJSON gruvbox;
+  home.file.".config/palettes/nord.json".text = builtins.toJSON nord;
+  home.file.".config/palettes/everforest.json".text = builtins.toJSON everforest;
+  home.file.".config/palettes/catppuccin.json".text = builtins.toJSON catppuccin;
 
   # ── Install the palette-switch and palette-wallpaper scripts ──────────────
-  home.packages = [ paletteSwitchScript paletteWallpaperScript ];
+  home.packages = [
+    paletteSwitchScript
+    paletteWallpaperScript
+  ];
 
   # ── Activation: set up the active symlink and generate initial configs ─────
   home.activation.palette-switcher = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
