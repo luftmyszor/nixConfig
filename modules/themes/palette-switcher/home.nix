@@ -340,6 +340,18 @@ LUA_EOF
         fi
       }
 
+      reload_ghostty() {
+        if pgrep -x ghostty > /dev/null 2>&1; then
+          if pkill -SIGUSR2 ghostty; then
+            log "Reloaded Ghostty"
+          else
+            log_err "Failed to signal Ghostty"
+          fi
+        else
+          log "Ghostty not running – skipping reload"
+        fi
+      }
+
       reload_wallpaper() {
         local out="$HOME/.local/share/wallpaper.png"
         [[ -f "$out" ]] || return 0
@@ -371,6 +383,7 @@ LUA_EOF
         render_neovim    || log_err "Neovim render failed"
         render_wallpaper || true
 
+        reload_ghostty   || true
         reload_waybar    || true
         reload_hyprland  || true
         reload_neovim    || true
