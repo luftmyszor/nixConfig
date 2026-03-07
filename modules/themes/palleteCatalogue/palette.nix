@@ -1,6 +1,9 @@
-# modules/theme/palette.nix
+# modules/themes/palleteCatalogue/palette.nix
 
 {
+  name        = "catppuccin";
+  description = "Catppuccin Mocha-inspired palette";
+
   # Base background/foreground
   bg       = "#1e1e2e";
   programBg= "#12121c";
