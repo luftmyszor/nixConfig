@@ -15,6 +15,9 @@ A modular NixOS configuration flake for the `luftmyszor` host. The setup uses **
 - [Available Modules](#available-modules)
 - [Theme System](#theme-system)
   - [Active Palette](#active-palette)
+  - [Live Theme Switcher (`theme-switch`)](#live-theme-switcher-theme-switch)
+  - [Runtime Palette Switching (`palette-switch`)](#runtime-palette-switching-no-rebuild-needed)
+  - [Color Keys](#color-keys)
   - [Palette Catalogue](#palette-catalogue)
   - [Using Palette Colors](#using-palette-colors)
 - [Dev Shells](#dev-shells)
@@ -30,6 +33,9 @@ A modular NixOS configuration flake for the `luftmyszor` host. The setup uses **
 nixConfig/
 ├── flake.nix                  # Flake entry point – system configs & dev shells
 ├── flake.lock                 # Pinned input versions
+│
+├── bin/
+│   └── theme-switch           # Live theme switcher script (also installed via HM)
 │
 ├── hosts/
 │   └── default/
@@ -53,7 +59,8 @@ nixConfig/
 │   ├── terminals/
 │   │   └── ghostty/           # Ghostty terminal emulator
 │   ├── themes/
-│   │   ├── palette.nix        # Active color palette (edit to change theme)
+│   │   ├── palette.nix        # Build-time color palette (edit to change build theme)
+│   │   ├── palette-switcher/  # Runtime palette switcher module (no rebuild needed)
 │   │   └── palleteCatalogue/  # Ready-made palette presets
 │   └── window-managers/
 │       └── hyprland/          # Hyprland Wayland compositor
@@ -155,7 +162,7 @@ modules.editors.vscode.enable          = true;
 
 | Module | Option | Description |
 |---|---|---|
-| ghostty | `modules.terminals.ghostty.enable` | Ghostty terminal emulator — colors are derived from the active palette |
+| ghostty | `modules.terminals.ghostty.enable` | Ghostty terminal emulator — runtime colors managed by `palette-switch` |
 
 ### Window Managers — `modules/window-managers`
 
@@ -181,6 +188,20 @@ modules.editors.vscode.enable          = true;
 | waybar | `modules.services.waybar.enable` | Waybar status bar with a drop-down animation script (`dropWaybar.sh`); **disabled by default** |
 | wofi | `modules.services.wofi.enable` | Wofi application launcher; config and CSS are generated from the active palette |
 
+### Themes — `modules/themes`
+
+| Module | Option | Description |
+|---|---|---|
+| palette-switcher | `modules.themes.palette-switcher.enable` | Runtime palette switcher — deploys palette JSON files, installs `palette-switch` and `palette-wallpaper` scripts, and generates module configs on activation |
+
+`palette-switcher` also exposes a `defaultPalette` option:
+
+```nix
+modules.themes.palette-switcher.defaultPalette = "tokyo-night"; # default
+```
+
+Set this to any palette name (`tokyo-night`, `gruvbox`, `nord`, `everforest`, `catppuccin`) to control which palette is activated on a fresh install.
+
 ### Editors — `modules/editors`
 
 | Module | Option | Description |
@@ -193,9 +214,131 @@ modules.editors.vscode.enable          = true;
 
 ### Active Palette
 
-`modules/themes/palette.nix` is the **single source of truth** for colors. It is imported directly in `flake.nix` and passed as a special argument (`palette`) to every module that needs it.
+`modules/themes/palette.nix` is the **static palette** used at Nix-build time (for modules that still reference it, such as `wofi`). It is imported in `flake.nix` and passed as a special argument (`palette`) to every module that needs it at build time.
 
-The current active theme is **Tokyo Night**. To switch themes, replace the contents of `modules/themes/palette.nix` with any file from `palleteCatalogue/`.
+The current build-time theme is **Tokyo Night**. To change the build-time theme you still replace the contents of `palette.nix` with any file from `palleteCatalogue/` and rebuild.
+
+---
+
+### Live Theme Switcher (`theme-switch`)
+
+`theme-switch` is a high-performance runtime switcher that reads directly from the
+palette catalogue (`.nix` files) instead of the pre-deployed JSON snapshots used
+by `palette-switch`.  No NixOS/Home Manager rebuild is needed after switching.
+
+#### How it works
+
+1. After `home-manager switch` two stable symlinks exist:
+   - `~/.config/theme/palette.json` → `~/.cache/theme/current/palette.json`
+   - `~/.config/theme/palette.css`  → `~/.cache/theme/current/palette.css`
+2. On first activation the cache files are seeded from the build-time palette
+   (`~/nixTheme/palette.{json,css}`).
+3. Running `theme-switch <name>` atomically updates both cache files in-place,
+   so anything reading `~/.config/theme/` sees the new theme immediately.
+
+#### Usage
+
+```bash
+# List available themes (reads from the palette catalogue)
+theme-switch list
+
+# Switch to a theme and reload running apps
+theme-switch nord
+theme-switch gruvbox
+theme-switch tokyo-night
+theme-switch everforest
+
+# Override the catalogue directory (useful for testing a custom palette)
+THEME_CATALOGUE_DIR=~/my-palettes theme-switch my-theme
+```
+
+#### What it updates
+
+| File | Description |
+|---|---|
+| `~/.cache/theme/current/palette.json` | JSON object with all palette keys |
+| `~/.cache/theme/current/palette.css`  | CSS custom-properties (`:root { --key: value; }`) |
+| `~/.cache/theme/current.theme`        | Plain-text file recording the active theme name |
+
+#### Reload hooks (best-effort)
+
+| Program | Signal / command |
+|---|---|
+| **waybar** | `pkill -USR2 waybar` |
+| **hyprland** | `hyprctl reload` |
+| **sway** | `swaymsg reload` |
+
+Missing programs are silently skipped — `theme-switch` never exits non-zero due
+to a program not running.
+
+---
+
+### Runtime Palette Switching (no rebuild needed)
+
+The `palette-switcher` module (`modules/themes/palette-switcher/`) provides **runtime palette switching** using a `palette-switch` script. After one initial NixOS build, you can swap themes instantly without triggering a rebuild.
+
+#### How it works
+
+1. **After the first build**, five palette JSON files are deployed to `~/.config/palettes/`:
+   - `tokyo-night.json`, `gruvbox.json`, `nord.json`, `everforest.json`, `catppuccin.json`
+2. `~/.config/palettes/active.json` is a symlink pointing to the current palette.
+3. `palette-switch` reads `active.json` with `jq`, renders config files for every supported module, and reloads running programs.
+
+#### Usage
+
+```bash
+# List available palettes (active one is marked with *)
+palette-switch list
+
+# Switch to a palette and apply immediately
+palette-switch tokyo-night
+palette-switch gruvbox
+palette-switch nord
+palette-switch everforest
+palette-switch catppuccin
+
+# Re-render and apply the wallpaper only
+palette-switch wallpaper
+
+# Re-render all configs from the current active palette (e.g. after a fresh install)
+palette-switch apply
+```
+
+#### Supported modules
+
+| Module | Config generated | Reload hook |
+|---|---|---|
+| **Ghostty** | `~/.config/ghostty/colors.conf` | New windows pick up colors automatically |
+| **Waybar** | `~/.config/waybar/normal-style.css` | `pkill -SIGUSR2 waybar` |
+| **Hyprland** | `~/.config/hypr/palette-colors.conf` | `hyprctl reload` |
+| **Neovim** | `~/.config/nvim/lua/palette-colors.lua` | Running instances signaled via socket |
+| **Wallpaper** | `~/.local/share/wallpaper.png` | `swww img` (if swww is running) |
+
+##### Neovim integration
+
+Add the following line to your `~/.config/nvim/init.lua` to apply the palette automatically when Neovim starts:
+
+```lua
+pcall(function() require('palette-colors').apply() end)
+```
+
+##### Wallpaper integration
+
+`palette-wallpaper` tints any PNG image with a gradient derived from the active palette (top = `primary`, bottom = `secondary`, transparent pixels filled with `bg`):
+
+```bash
+# Place your source image here, then run palette-switch to apply
+cp my-image.png ~/.config/palettes/wallpaper-source.png
+palette-switch wallpaper          # render + apply via swww
+# or switch theme and re-render all at once:
+palette-switch nord
+```
+
+The rendered wallpaper is saved to `~/.local/share/wallpaper.png` and passed to `swww img` automatically if `swww` is running.
+
+---
+
+### Color Keys
 
 All palette files expose the same set of color keys:
 

@@ -118,6 +118,8 @@ in
   modules.terminals.ghostty.enable = true;
   modules.window-managers.hyprland.enable = true;
 
+  modules.themes.palette-switcher.enable = true;
+
   modules.services.quickshell.enable = true;
   modules.services.waybar.enable = false;
   modules.services.swww.enable = true;

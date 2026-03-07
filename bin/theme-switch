@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+# theme-switch – live theme switcher for nixConfig
+#
+# Switches the active theme at runtime without a NixOS rebuild.
+# Dependencies: nix, jq
+#
+# Usage:
+#   theme-switch list
+#   theme-switch <theme-name>
+set -euo pipefail
+
+CATALOGUE_DIR="${THEME_CATALOGUE_DIR:-/etc/nixos/modules/themes/palleteCatalogue}"
+CACHE_DIR="${HOME}/.cache/theme/current"
+
+log()     { echo "[theme-switch] $*"; }
+log_err() { echo "[theme-switch] ERROR: $*" >&2; }
+
+usage() {
+  cat <<'EOF'
+Usage: theme-switch <theme-name>
+       theme-switch list
+
+Commands:
+  list           List available themes from the palette catalogue
+  <theme-name>   Switch to the named theme
+
+The script:
+  1. Reads  $THEME_CATALOGUE_DIR/<theme>.nix  (default: /etc/nixos/...)
+  2. Converts it to JSON via  nix eval --json
+  3. Generates CSS custom-properties via  jq
+  4. Atomically writes to  ~/.cache/theme/current/{palette.json,palette.css}
+  5. Records theme name in  ~/.cache/theme/current.theme
+  6. Sends reload signals to waybar, hyprland, and sway (best-effort)
+
+Examples:
+  theme-switch list
+  theme-switch nord
+  theme-switch gruvbox
+  theme-switch tokyo-night
+  theme-switch everforest
+EOF
+}
+
+list_themes() {
+  if [[ ! -d "${CATALOGUE_DIR}" ]]; then
+    log_err "Catalogue directory not found: ${CATALOGUE_DIR}"
+    log_err "Override with: THEME_CATALOGUE_DIR=/path/to/palleteCatalogue theme-switch list"
+    exit 1
+  fi
+  log "Available themes:"
+  for f in "${CATALOGUE_DIR}"/*.nix; do
+    [[ -f "${f}" ]] || continue
+    basename "${f}" .nix
+  done
+}
+
+if [[ $# -lt 1 ]] || [[ "${1}" == "--help" ]] || [[ "${1}" == "-h" ]]; then
+  usage
+  exit 0
+fi
+
+theme="${1}"
+
+if [[ "${theme}" == "list" ]]; then
+  list_themes
+  exit 0
+fi
+
+palette_file="${CATALOGUE_DIR}/${theme}.nix"
+if [[ ! -f "${palette_file}" ]]; then
+  log_err "Theme '${theme}' not found at: ${palette_file}"
+  log_err "Run  theme-switch list  to see available themes"
+  exit 1
+fi
+
+log "Loading palette: ${theme}"
+
+# Convert Nix palette attrset to JSON
+palette_json=$(nix eval --json --expr "import ${palette_file}")
+
+# Ensure cache directory exists
+mkdir -p "${CACHE_DIR}"
+
+# Atomically write palette.json
+tmp_json=$(mktemp "${CACHE_DIR}/.palette.json.XXXXXX")
+printf '%s\n' "${palette_json}" > "${tmp_json}"
+mv "${tmp_json}" "${CACHE_DIR}/palette.json"
+log "Written: ${CACHE_DIR}/palette.json"
+
+# Generate CSS custom-properties from JSON and write atomically
+tmp_css=$(mktemp "${CACHE_DIR}/.palette.css.XXXXXX")
+{
+  printf ':root {\n'
+  printf '%s\n' "${palette_json}" | jq -r 'to_entries | .[] | "  --\(.key): \(.value);"'
+  printf '}\n'
+} > "${tmp_css}"
+mv "${tmp_css}" "${CACHE_DIR}/palette.css"
+log "Written: ${CACHE_DIR}/palette.css"
+
+# Record the active theme name
+printf '%s\n' "${theme}" > "$(dirname "${CACHE_DIR}")/current.theme"
+log "Active theme: ${theme}"
+
+# ------ reload running applications (best effort) ----------------------------
+
+# waybar
+if pgrep -x waybar > /dev/null 2>&1; then
+  if pkill -USR2 waybar; then
+    log "Reloaded waybar"
+  else
+    log_err "Failed to reload waybar"
+  fi
+else
+  log "waybar not running – skipping"
+fi
+
+# hyprland
+if command -v hyprctl > /dev/null 2>&1; then
+  if hyprctl version > /dev/null 2>&1; then
+    if hyprctl reload; then
+      log "Reloaded hyprland"
+    else
+      log_err "Failed to reload hyprland"
+    fi
+  else
+    log "hyprctl not available – skipping"
+  fi
+else
+  log "hyprctl not available – skipping"
+fi
+
+# sway
+if command -v swaymsg > /dev/null 2>&1; then
+  if swaymsg -t get_version > /dev/null 2>&1; then
+    if swaymsg reload; then
+      log "Reloaded sway"
+    else
+      log_err "Failed to reload sway"
+    fi
+  else
+    log "sway not running – skipping"
+  fi
+else
+  log "sway not running – skipping"
+fi
+
+log "Done"

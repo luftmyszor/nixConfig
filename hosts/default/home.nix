@@ -9,7 +9,14 @@ let
   cssVars = lib.concatStringsSep "\n" (
     lib.mapAttrsToList (name: value: "  --${name}: ${value};") palette
   );
-  
+
+  # ── theme-switch: live theme switcher driven by the palette catalogue ──────
+  # Wraps bin/theme-switch so that jq is always on PATH when the script runs.
+  themeSwitchScript = pkgs.writeShellApplication {
+    name = "theme-switch";
+    runtimeInputs = [ pkgs.jq ];
+    text = builtins.readFile ../../bin/theme-switch;
+  };
 
 in
 {
@@ -54,10 +61,41 @@ in
 
   programs.home-manager.enable = true;
 
+  # Make theme-switch available on PATH.
+  home.packages = [ themeSwitchScript ];
+
+  # ── Stable out-of-store symlinks + mutable cache seed ─────────────────────
+  # ~/.config/theme/{palette.json,palette.css} are stable symlinks that always
+  # point into the mutable cache directory.  Apps read from ~/.config/theme/
+  # and the cache is updated at runtime by `theme-switch <name>` without any
+  # Nix rebuild.
+  home.activation.theme-cache = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    # Ensure mutable directories exist
+    $DRY_RUN_CMD mkdir -p "$HOME/.cache/theme/current"
+    $DRY_RUN_CMD mkdir -p "$HOME/.config/theme"
+
+    # Create / refresh the stable config symlinks (out-of-store targets).
+    $DRY_RUN_CMD ln -sfn "$HOME/.cache/theme/current/palette.json" \
+                         "$HOME/.config/theme/palette.json"
+    $DRY_RUN_CMD ln -sfn "$HOME/.cache/theme/current/palette.css" \
+                         "$HOME/.config/theme/palette.css"
+
+    # Seed the cache from build-time palette outputs on first activation so
+    # that apps have valid files before `theme-switch` is ever called.
+    for ext in json css; do
+      src="$HOME/nixTheme/palette.$ext"
+      dst="$HOME/.cache/theme/current/palette.$ext"
+      if [[ ! -f "$dst" ]] && [[ -f "$src" ]]; then
+        $DRY_RUN_CMD cp "$src" "$dst"
+      fi
+    done
+  '';
+
   modules.shells.zsh.enable = true;
   modules.terminals.ghostty.enable = true;
   modules.window-managers.hyprland.enable = true;
 
+  modules.themes.palette-switcher.enable = true;
 
   modules.services.quickshell.enable = true;
   modules.services.waybar.enable = false;
