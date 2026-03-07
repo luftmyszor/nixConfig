@@ -308,7 +308,7 @@ palette-switch apply
 
 | Module | Config generated | Reload hook |
 |---|---|---|
-| **Ghostty** | `~/.config/ghostty/colors.conf` | New windows pick up colors automatically |
+| **Ghostty** | `~/.config/ghostty/colors.conf` | `pkill -SIGUSR2 ghostty` |
 | **Waybar** | `~/.config/waybar/normal-style.css` | `pkill -SIGUSR2 waybar` |
 | **Hyprland** | `~/.config/hypr/palette-colors.conf` | `hyprctl reload` |
 | **Neovim** | `~/.config/nvim/lua/palette-colors.lua` | Running instances signaled via socket |
