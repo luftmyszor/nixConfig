@@ -532,7 +532,7 @@ let
       [[ -z "$selected" ]] && exit 0
 
       # Strip the " (active)" suffix if present
-      theme="${selected% (active)}"
+      theme="''${selected% (active)}"
 
       palette-switch "$theme"
     '';
