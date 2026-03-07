@@ -483,6 +483,61 @@ let
     '';
   };
 
+  # ── wofi-theme-switch script ──────────────────────────────────────────────
+  # Opens a wofi dmenu showing all available palettes (active one marked with
+  # "(active)").  Selecting an entry calls palette-switch to apply that theme.
+  wofiThemeSwitchScript = pkgs.writeShellApplication {
+    name = "wofi-theme-switch";
+    runtimeInputs = [
+      pkgs.wofi
+      paletteSwitchScript
+    ];
+    text = ''
+      PALETTES_DIR="$HOME/.config/palettes"
+      ACTIVE_LINK="$PALETTES_DIR/active.json"
+
+      if [[ ! -d "$PALETTES_DIR" ]]; then
+        echo "[wofi-theme-switch] Palettes directory not found: $PALETTES_DIR" >&2
+        exit 1
+      fi
+
+      # Determine the currently active palette name
+      active_name=""
+      if [[ -L "$ACTIVE_LINK" ]]; then
+        active_name=$(basename "$(readlink "$ACTIVE_LINK")" .json)
+      fi
+
+      # Build the list shown in wofi
+      theme_list=""
+      for f in "$PALETTES_DIR"/*.json; do
+        [[ -f "$f" ]] || continue
+        name=$(basename "$f" .json)
+        [[ "$name" == "active" ]] && continue
+        if [[ "$name" == "$active_name" ]]; then
+          theme_list+="$name (active)"$'\n'
+        else
+          theme_list+="$name"$'\n'
+        fi
+      done
+
+      if [[ -z "$theme_list" ]]; then
+        echo "[wofi-theme-switch] No palettes found in $PALETTES_DIR" >&2
+        exit 1
+      fi
+
+      # Show picker and capture selection
+      selected=$(printf '%s' "$theme_list" | wofi --dmenu --prompt "Switch Theme" --insensitive)
+
+      # Nothing selected – user dismissed the picker
+      [[ -z "$selected" ]] && exit 0
+
+      # Strip the " (active)" suffix if present
+      theme="${selected% (active)}"
+
+      palette-switch "$theme"
+    '';
+  };
+
 in
 lib.mkIf cfg.enable {
 
@@ -491,10 +546,11 @@ lib.mkIf cfg.enable {
     name: data: lib.nameValuePair ".config/palettes/${name}.json" { text = builtins.toJSON data; }
   ) palettes;
 
-  # ── Install the palette-switch and palette-wallpaper scripts ──────────────
+  # ── Install the palette-switch, palette-wallpaper, and wofi-theme-switch scripts ──
   home.packages = [
     paletteSwitchScript
     paletteWallpaperScript
+    wofiThemeSwitchScript
   ];
 
   # ── Activation: set up the active symlink and generate initial configs ─────
