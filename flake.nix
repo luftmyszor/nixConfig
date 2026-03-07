@@ -36,11 +36,12 @@
           }
         ];
       };
-      
-    devShells.${system} = {
-      nix = shell "nix";
-      python = shell "python";
-      cpp = shell "cpp";
-      csharp = shell "csharp";
+
+      devShells.${system} = {
+        nix = shell "nix";
+        python = shell "python";
+        cpp = shell "cpp";
+        csharp = shell "csharp";
+      };
     };
 }

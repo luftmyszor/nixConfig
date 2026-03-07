@@ -1,51 +1,9 @@
-{ config, pkgs, palette, lib, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   cfg = config.modules.services.waybar;
 
-  waybarCss = pkgs.writeTextFile {
-    name = "waybarStyle.css";
-    text = ''
-
-      window#waybar {
-        background-color: ${palette.bg};
-        color: ${palette.fg};
-
-	border: 5px solid ${palette.primary};
-	border-top: hidden;
-	border-radius: 0px 0px 30px 30px;
-
-      }
-
-      box {
-        transition: 1s;
-	margin-top: 0px;
-      }
-
-
-      label.module {
-        margin: 10px 10px;
-	transition: 1s
-      }
-
-      #custom-spacer {
-        padding: 0px 30px;
-      }
-
-      @keyframes drop {
-        from { margin-top: 0; }
-	to { margin-top: 300; }
-      }
-    
-
-      .module {
-        margin-top: 0px;
-        animation: 0.05 linear drop;
-	background-color: ${palette.secondary};
-      }
-
-    '';};
-
+  # The moved CSS is layout-only (no palette colors) – still managed by Nix.
   waybarMovedCss = pkgs.writeTextFile {
     name = "movedWaybarStyle.css";
     text = ''
@@ -63,6 +21,9 @@ let
 
     '';};
 
+  # normal-style.css is generated at runtime by `palette-switch` so that
+  # colors can be updated without a Nix rebuild.  dropWaybar.sh still
+  # toggles style.css between normal-style.css and moved-style.css.
   dropWaybarScript = pkgs.writeShellApplication {
   name = "dropWaybar.sh";
   text = ''
@@ -84,9 +45,11 @@ let
 
   '';};
 in lib.mkIf cfg.enable {
-    
 
-  home.file.".config/waybar/normal-style.css".source = waybarCss;
+  # normal-style.css is NOT managed by Nix – it is written at runtime by
+  # `palette-switch`, which reads the active palette JSON and generates the
+  # full CSS with the correct colours.  The activation script in the
+  # palette-switcher module ensures the file exists after a fresh build.
   home.file.".config/waybar/moved-style.css".source = waybarMovedCss;
   home.file.".config/waybar/dropWaybar.sh".source = dropWaybarScript;
     
