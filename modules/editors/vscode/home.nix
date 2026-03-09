@@ -25,6 +25,8 @@ lib.mkIf cfg.enable {
 
       # C# extentions
       ms-dotnettools.csharp
+      ms-dotnettools.vscode-dotnet-runtime
+      ms-dotnettools.csdevkit
 
       # Qml extentions
 
