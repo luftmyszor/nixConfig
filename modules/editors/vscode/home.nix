@@ -16,6 +16,7 @@ lib.mkIf cfg.enable {
     package = pkgs.vscode-fhs;
 
     extensions = with pkgs.vscode-extensions; [
+      formulahendry.code-runner
       # Nix extentions
       bbenoist.nix
       jnoortheen.nix-ide
@@ -24,8 +25,8 @@ lib.mkIf cfg.enable {
       ms-vscode.cpptools
 
       # C# extentions
-      ms-dotnettools.csharp
       ms-dotnettools.vscode-dotnet-runtime
+      ms-dotnettools.csharp
       ms-dotnettools.csdevkit
 
       # Qml extentions
@@ -48,6 +49,12 @@ lib.mkIf cfg.enable {
       "nix.serverPath" = "nil";
 
       "qt-qml.qmlls.useQmlImportPathEnvVar" = true;
+
+      "code-runner.runInTerminal" = true;
+      "code-runner.executorMap" = {
+
+        "csharp" = "dotnet run";
+      };
     };
   };
   home.packages = [ pkgs.nil ];

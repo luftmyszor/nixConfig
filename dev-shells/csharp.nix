@@ -1,7 +1,7 @@
 { pkgs }:
 let
   myPackages = with pkgs; [
-    dotnet-sdk
+    dotnet-sdk_10
     omnisharp-roslyn
     netcoredbg
     csharprepl
@@ -11,6 +11,10 @@ in
 pkgs.mkShell {
   packages = myPackages;
   shellHook = ''
-    ${import ./shell-hook.nix { inherit pkgs; shellName = "csharp"; packages = myPackages; }}
+    ${import ./shell-hook.nix {
+      inherit pkgs;
+      shellName = "csharp";
+      packages = myPackages;
+    }}
   '';
 }
