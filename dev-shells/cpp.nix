@@ -9,6 +9,7 @@ let
     lldb
     valgrind
     cppcheck
+    zsh
   ];
 in
 

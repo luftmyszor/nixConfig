@@ -1,4 +1,4 @@
-{ pkgs, shellName ? "dev", packages ? [] }:
+{ pkgs, shellName ? "dev", packages ? [], additionalZshConfig ? "" }:
 
 let
   # ANSI codes (escaped properly for Bash)
@@ -37,5 +37,13 @@ shell-pkgs() {
     echo -e " ${colors.red}- ${colors.reset}$pkg"
   done
 }
+
+export ZDOTDIR=$(mktemp -d)
+[[ -f "$HOME/.zshrc" ]] && cp "$HOME/.zshrc" "$ZDOTDIR/.zshrc"
+${if additionalZshConfig != "" then "cat >> \"$ZDOTDIR/.zshrc\" << 'NIX_DEVSHELL_EXTRA_ZSH_CONFIG'\n${additionalZshConfig}\nNIX_DEVSHELL_EXTRA_ZSH_CONFIG" else ""}
+cat >> "$ZDOTDIR/.zshrc" << 'NIX_DEVSHELL_ZDOTDIR_CLEANUP'
+zshexit() { rm -rf "$ZDOTDIR"; }
+NIX_DEVSHELL_ZDOTDIR_CLEANUP
+exec zsh
 ''
 

@@ -13,7 +13,7 @@ packageNames = builtins.map (p: p.pname or (builtins.parseDrvName p.name).name)
 
 in
 pkgs.mkShell {
-  packages = [ pythonEnv ];  
+  packages = [ pythonEnv pkgs.zsh ];  
   shellHook = ''
     ${import ./shell-hook.nix { inherit pkgs; shellName = "python"; packages = packageNames; }}
   '';

@@ -4,11 +4,12 @@ let
     nodejs_24
     yarn
     pnpm
+    zsh
   ];
 in
 
 pkgs.mkShell {
-  panodejs_25ckages = myPackages;
+  packages = myPackages;
   shellHook = ''
     ${import ./shell-hook.nix { inherit pkgs; shellName = "nodejs"; packages = myPackages; }}
   '';

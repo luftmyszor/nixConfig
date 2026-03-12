@@ -9,6 +9,7 @@ let
     nix-diff
     nix-tree
     nix-output-monitor
+    zsh
   ];
 in
 
@@ -17,10 +18,15 @@ pkgs.mkShell {
 
 
   shellHook = ''
-    ${import ./shell-hook.nix { inherit pkgs; shellName = "nix"; packages = myPackages; }}
-    alias nixSwitch="sudo nixos-rebuild switch --flake /etc/nixos#luftmyszor"
-    alias nixTest="sudo nixos-rebuild test --flake /etc/nixos#luftmyszor"
-
+    ${import ./shell-hook.nix {
+      inherit pkgs;
+      shellName = "nix";
+      packages = myPackages;
+      additionalZshConfig = ''
+        alias nixSwitch="sudo nixos-rebuild switch --flake /etc/nixos#luftmyszor"
+        alias nixTest="sudo nixos-rebuild test --flake /etc/nixos#luftmyszor"
+      '';
+    }}
   '';
 }
 

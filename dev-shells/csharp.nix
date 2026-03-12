@@ -5,6 +5,7 @@ let
     omnisharp-roslyn
     netcoredbg
     csharprepl
+    zsh
   ];
 in
 
