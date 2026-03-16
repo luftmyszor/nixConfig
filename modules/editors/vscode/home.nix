@@ -42,27 +42,6 @@ lib.mkIf cfg.enable {
     # ]
     ;
 
-    # optional: some UI tweaks
-    userSettings = {
-      "editor.formatOnSave" = true;
-      "nix.enableLanguageServer" = true;
-      "nix.serverPath" = "nil";
-
-      "qt-qml.qmlls.useQmlImportPathEnvVar" = true;
-
-      "code-runner.runInTerminal" = true;
-      "code-runner.executorMap" = {
-
-        "csharp" = "dotnet run";
-      };
-    };
   };
   home.packages = [ pkgs.nil ];
-
-  # The palette-switcher replaces the managed settings.json symlink with a
-  # mutable file.  On the next rebuild home-manager would try to back it up
-  # (settings.json → settings.json.backup) but the backup already exists,
-  # causing checkLinkTargets to fail.  force = true makes home-manager
-  # overwrite whatever is there without any backup.
-  xdg.configFile."Code/User/settings.json".force = true;
 }
