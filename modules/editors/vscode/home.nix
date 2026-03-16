@@ -7,6 +7,25 @@
 
 let
   cfg = config.modules.editors.vscode;
+
+  # Static (non-color) settings managed by this module.
+  # Written to settings.json every rebuild via home.activation so that
+  # home-manager never places a read-only nix-store symlink there — leaving
+  # the file mutable for the palette-switcher to merge colors on top.
+  staticSettings = pkgs.writeText "vscode-base-settings.json" (
+    builtins.toJSON {
+      "editor.formatOnSave" = true;
+      "nix.enableLanguageServer" = true;
+      "nix.serverPath" = "nil";
+
+      "qt-qml.qmlls.useQmlImportPathEnvVar" = true;
+
+      "code-runner.runInTerminal" = true;
+      "code-runner.executorMap" = {
+        "csharp" = "dotnet run";
+      };
+    }
+  );
 in
 lib.mkIf cfg.enable {
   programs.vscode = {
@@ -41,25 +60,23 @@ lib.mkIf cfg.enable {
     #   }
     # ]
     ;
-
-    userSettings = {
-      "editor.formatOnSave" = true;
-      "nix.enableLanguageServer" = true;
-      "nix.serverPath" = "nil";
-
-      "qt-qml.qmlls.useQmlImportPathEnvVar" = true;
-
-      "code-runner.runInTerminal" = true;
-      "code-runner.executorMap" = {
-        "csharp" = "dotnet run";
-      };
-    };
   };
   home.packages = [ pkgs.nil ];
 
-  # Allow the palette-switcher to replace settings.json with a mutable file
-  # at runtime (it adds color customizations on top of the static settings).
-  # force = true makes home-manager overwrite it on every rebuild without
-  # requiring a backup, so the two never conflict.
-  xdg.configFile."Code/User/settings.json".force = true;
+  # Write static VSCode settings on every rebuild.  Using an activation script
+  # (rather than programs.vscode.userSettings / xdg.configFile) keeps
+  # settings.json as a plain mutable file so the palette-switcher can freely
+  # merge color customizations on top without fighting home-manager's symlinks.
+  #
+  # Note: this intentionally overwrites any existing settings.json with the
+  # static base each rebuild.  The palette-switcher activation (which lists
+  # "vscodeSettings" in its entryAfter) always runs next and re-applies the
+  # current palette's color blocks on top, so the final file is always
+  # static settings + live palette colors.
+  home.activation.vscodeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    settings_file="$HOME/.config/Code/User/settings.json"
+    $DRY_RUN_CMD mkdir -p "$(dirname "$settings_file")"
+    $DRY_RUN_CMD cp ${staticSettings} "$settings_file"
+    $DRY_RUN_CMD chmod 644 "$settings_file"
+  '';
 }
