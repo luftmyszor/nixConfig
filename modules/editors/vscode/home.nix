@@ -58,4 +58,10 @@ lib.mkIf cfg.enable {
     };
   };
   home.packages = [ pkgs.nil ];
+
+  # Remove settings.json before home-manager activation so that it can replace
+  # any mutable file left behind by the palette-switcher with its managed symlink.
+  home.activation.removeVscodeSettings = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
+    rm -f "$HOME/.config/Code/User/settings.json"
+  '';
 }
