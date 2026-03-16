@@ -350,16 +350,17 @@ let
 
             render_vscode() {
               load_palette
-              # settings.json is fully managed by this script (not by home-manager),
-              # so we can write a mutable file here.  We merge over any existing
-              # contents so that user tweaks made directly in VSCode are preserved.
+              # Merge palette colours into settings.json.  Static settings are
+              # managed by the vscode module (programs.vscode.userSettings).
+              # On a fresh rebuild settings.json is a nix-store symlink; we read
+              # it, remove the symlink, and write a mutable file that contains
+              # both the static settings and the live palette colours.
               local settings_file="$HOME/.config/Code/User/settings.json"
               mkdir -p "$(dirname "$settings_file")"
 
               local base_settings='{}'
               if [[ -e "$settings_file" ]]; then
                 base_settings=$(jq '.' "$settings_file" 2>/dev/null || echo '{}')
-                # Remove a leftover symlink from an older home-manager setup if present.
                 [[ -L "$settings_file" ]] && rm -f "$settings_file"
               fi
 
@@ -381,12 +382,6 @@ let
                 --arg muted     "$muted"     \
                 --arg white     "$white"     \
                 '. + {
-                  "editor.formatOnSave": true,
-                  "nix.enableLanguageServer": true,
-                  "nix.serverPath": "nil",
-                  "qt-qml.qmlls.useQmlImportPathEnvVar": true,
-                  "code-runner.runInTerminal": true,
-                  "code-runner.executorMap": { "csharp": "dotnet run" },
                   "workbench.colorCustomizations": {
                     "editor.background":                  $bg,
                     "editor.foreground":                  $fg,
