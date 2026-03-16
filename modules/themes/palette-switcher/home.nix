@@ -350,18 +350,16 @@ let
 
             render_vscode() {
               load_palette
-              # Write palette colors directly into VSCode's settings.json as
-              # workbench.colorCustomizations and editor.tokenColorCustomizations.
-              # VSCode watches settings.json with a filesystem watcher and applies
-              # changes live to all open windows – no reload needed.
+              # settings.json is fully managed by this script (not by home-manager),
+              # so we can write a mutable file here.  We merge over any existing
+              # contents so that user tweaks made directly in VSCode are preserved.
               local settings_file="$HOME/.config/Code/User/settings.json"
               mkdir -p "$(dirname "$settings_file")"
 
-              # If home-manager wrote settings.json as a nix-store symlink (read-only),
-              # read its contents then remove the symlink so we can write a mutable file.
               local base_settings='{}'
               if [[ -e "$settings_file" ]]; then
                 base_settings=$(jq '.' "$settings_file" 2>/dev/null || echo '{}')
+                # Remove a leftover symlink from an older home-manager setup if present.
                 [[ -L "$settings_file" ]] && rm -f "$settings_file"
               fi
 
@@ -383,6 +381,12 @@ let
                 --arg muted     "$muted"     \
                 --arg white     "$white"     \
                 '. + {
+                  "editor.formatOnSave": true,
+                  "nix.enableLanguageServer": true,
+                  "nix.serverPath": "nil",
+                  "qt-qml.qmlls.useQmlImportPathEnvVar": true,
+                  "code-runner.runInTerminal": true,
+                  "code-runner.executorMap": { "csharp": "dotnet run" },
                   "workbench.colorCustomizations": {
                     "editor.background":                  $bg,
                     "editor.foreground":                  $fg,
