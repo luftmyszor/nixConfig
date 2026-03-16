@@ -1,8 +1,13 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
   cfg = config.modules.window-managers.hyprland;
-in 
-  lib.mkIf cfg.enable {
+in
+lib.mkIf cfg.enable {
   wayland.windowManager.hyprland.settings = {
 
     workspace = [

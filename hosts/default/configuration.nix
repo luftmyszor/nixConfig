@@ -127,6 +127,8 @@ in
 
   modules.editors.vscode.enable = true;
 
+  modules.browsers.zen.enable = true;
+
   home-manager.useGlobalPkgs = true;
   home-manager.useUserPackages = true;
   home-manager.backupFileExtension = "backup";
