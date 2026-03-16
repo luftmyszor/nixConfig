@@ -350,11 +350,13 @@ let
 
             render_vscode() {
               load_palette
-              # Merge palette colors into settings.json.  Static settings are
-              # written by the vscode module's activation script (vscodeSettings),
-              # which always runs before this.  We read the current file as the
-              # base so any static settings are preserved, then replace only the
-              # two color blocks.
+              # Merge palette colors into settings.json.  On each rebuild
+              # home-manager replaces settings.json with a symlink to the
+              # nix-store derivation containing static settings (via
+              # programs.vscode.profiles.default.userSettings + force = true).
+              # This function reads the symlink target to get the base settings,
+              # removes the symlink, and writes a mutable file containing both
+              # the static settings and the live palette color blocks.
               local settings_file="$HOME/.config/Code/User/settings.json"
               mkdir -p "$(dirname "$settings_file")"
 
@@ -738,12 +740,7 @@ lib.mkIf cfg.enable {
   ];
 
   # ── Activation: set up the active symlink and generate initial configs ─────
-  # "vscodeSettings" is an optional dependency: if the vscode module is
-  # disabled, that activation entry won't exist and home-manager's DAG simply
-  # ignores the missing key.  When vscode IS enabled it guarantees this runs
-  # after the static base settings are written so colors are always merged on
-  # top of a complete settings.json.
-  home.activation.palette-switcher = lib.hm.dag.entryAfter [ "writeBoundary" "vscodeSettings" ] ''
+  home.activation.palette-switcher = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     PALETTES_DIR="$HOME/.config/palettes"
     ACTIVE_LINK="$PALETTES_DIR/active.json"
     DEFAULT_PALETTE="${cfg.defaultPalette}"
