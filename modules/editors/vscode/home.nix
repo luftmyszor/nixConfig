@@ -59,9 +59,10 @@ lib.mkIf cfg.enable {
   };
   home.packages = [ pkgs.nil ];
 
-  # Remove settings.json before home-manager activation so that it can replace
-  # any mutable file left behind by the palette-switcher with its managed symlink.
-  home.activation.removeVscodeSettings = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
-    rm -f "$HOME/.config/Code/User/settings.json"
-  '';
+  # The palette-switcher replaces the managed settings.json symlink with a
+  # mutable file.  On the next rebuild home-manager would try to back it up
+  # (settings.json → settings.json.backup) but the backup already exists,
+  # causing checkLinkTargets to fail.  force = true makes home-manager
+  # overwrite whatever is there without any backup.
+  xdg.configFile."Code/User/settings.json".force = true;
 }
