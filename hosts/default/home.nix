@@ -1,4 +1,9 @@
-{ pkgs, lib, config, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
 
 let
   moduleLib = import ../../lib/loadModules.nix { inherit lib; };
@@ -27,12 +32,10 @@ in
     inherit username homeDirectory;
     stateVersion = "25.05";
 
-
     sessionVariables = { };
   };
   # Creates palette.json for script use
-  home.file."nixTheme/palette.json".text = 
-    builtins.toJSON palette;
+  home.file."nixTheme/palette.json".text = builtins.toJSON palette;
   home.file."nixTheme/palette.css".text = ''
     :root {
     ${cssVars}
@@ -56,8 +59,6 @@ in
       color: var(--bg);
     }
   '';
-
-
 
   programs.home-manager.enable = true;
 
@@ -104,6 +105,7 @@ in
 
   modules.editors.vscode.enable = true;
 
-  home.file.".palette/palette.json".text = 
-    builtins.toJSON palette;
+  modules.browsers.zen.enable = true;
+
+  home.file.".palette/palette.json".text = builtins.toJSON palette;
 }
