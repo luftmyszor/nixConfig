@@ -364,12 +364,6 @@ let
               local settings_file="$vscode_dir/settings.json"
               mkdir -p "$vscode_dir"
 
-              # Read base settings (fall back to empty object if not yet written).
-              local base_settings='{}'
-              if [[ -e "$base_file" ]]; then
-                base_settings=$(jq '.' "$base_file" 2>/dev/null || echo '{}')
-              fi
-
               # Write the color blocks to the dedicated colors file.
               local tmp_colors
               tmp_colors=$(mktemp)
