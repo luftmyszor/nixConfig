@@ -19,19 +19,19 @@ lib.mkIf cfg.enable {
 
       extensions = with pkgs.vscode-extensions; [
         formulahendry.code-runner
-        # Nix extentions
+        # Nix extensions
         bbenoist.nix
         jnoortheen.nix-ide
 
-        # C++ extentions
+        # C++ extensions
         ms-vscode.cpptools
 
-        # C# extentions
+        # C# extensions
         ms-dotnettools.vscode-dotnet-runtime
         ms-dotnettools.csharp
         ms-dotnettools.csdevkit
 
-        # Qml extentions
+        # Qml extensions
 
       ]
       # ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
@@ -43,28 +43,29 @@ lib.mkIf cfg.enable {
       #   }
       # ]
       ;
-
-      userSettings = {
-        "editor.formatOnSave" = true;
-        "nix.enableLanguageServer" = true;
-        "nix.serverPath" = "nil";
-
-        "qt-qml.qmlls.useQmlImportPathEnvVar" = true;
-
-        "code-runner.runInTerminal" = true;
-        "code-runner.executorMap" = {
-          "csharp" = "dotnet run";
-        };
-      };
     };
   };
   home.packages = [ pkgs.nil ];
 
-  # Allow home-manager to overwrite an existing settings.json (which may have
-  # been left as a plain mutable file by the palette-switcher on the previous
-  # activation).  On each rebuild home-manager replaces it with a fresh symlink
-  # to the static-settings derivation; the palette-switcher activation then
-  # reads the symlink, removes it, and writes a mutable file containing both
-  # the static settings and the live palette colors.
-  xdg.configFile."Code/User/settings.json".force = true;
+  # Static (non-color) settings managed by this module.
+  #
+  # Written to settings.base.json as a nix-store symlink — home-manager never
+  # touches settings.json directly, so there is no checkLinkTargets conflict.
+  # The palette-switcher activation reads this file as the base, writes the
+  # live palette colors to settings.colors.json, and merges them into the
+  # final mutable settings.json.
+  xdg.configFile."Code/User/settings.base.json" = {
+    text = builtins.toJSON {
+      "editor.formatOnSave" = true;
+      "nix.enableLanguageServer" = true;
+      "nix.serverPath" = "nil";
+
+      "qt-qml.qmlls.useQmlImportPathEnvVar" = true;
+
+      "code-runner.runInTerminal" = true;
+      "code-runner.executorMap" = {
+        "csharp" = "dotnet run";
+      };
+    };
+  };
 }

@@ -350,25 +350,30 @@ let
 
             render_vscode() {
               load_palette
-              # Merge palette colors into settings.json.  On each rebuild
-              # home-manager replaces settings.json with a symlink to the
-              # nix-store derivation containing static settings (via
-              # programs.vscode.profiles.default.userSettings + force = true).
-              # This function reads the symlink target to get the base settings,
-              # removes the symlink, and writes a mutable file containing both
-              # the static settings and the live palette color blocks.
-              local settings_file="$HOME/.config/Code/User/settings.json"
-              mkdir -p "$(dirname "$settings_file")"
+              # Two-file approach:
+              #   settings.base.json  – nix-store symlink managed by home.nix;
+              #                         contains all static (non-color) settings.
+              #   settings.colors.json – mutable file managed by this function;
+              #                          contains only the two color blocks.
+              #   settings.json        – mutable file, merged from the two above;
+              #                          never owned by home-manager so there is
+              #                          no checkLinkTargets conflict.
+              local vscode_dir="$HOME/.config/Code/User"
+              local base_file="$vscode_dir/settings.base.json"
+              local colors_file="$vscode_dir/settings.colors.json"
+              local settings_file="$vscode_dir/settings.json"
+              mkdir -p "$vscode_dir"
 
+              # Read base settings (fall back to empty object if not yet written).
               local base_settings='{}'
-              if [[ -e "$settings_file" ]]; then
-                base_settings=$(jq '.' "$settings_file" 2>/dev/null || echo '{}')
-                [[ -L "$settings_file" ]] && rm -f "$settings_file"
+              if [[ -e "$base_file" ]]; then
+                base_settings=$(jq '.' "$base_file" 2>/dev/null || echo '{}')
               fi
 
-              local tmp
-              tmp=$(mktemp)
-              jq \
+              # Write the color blocks to the dedicated colors file.
+              local tmp_colors
+              tmp_colors=$(mktemp)
+              jq -n \
                 --arg bg        "$bg"        \
                 --arg programBg "$programBg" \
                 --arg fg        "$fg"        \
@@ -383,7 +388,7 @@ let
                 --arg dark      "$dark"      \
                 --arg muted     "$muted"     \
                 --arg white     "$white"     \
-                '. + {
+                '{
                   "workbench.colorCustomizations": {
                     "editor.background":                  $bg,
                     "editor.foreground":                  $fg,
@@ -478,9 +483,26 @@ let
                       }
                     ]
                   }
-                }' <<< "$base_settings" > "$tmp"
-              mv "$tmp" "$settings_file"
-              log "Rendered VSCode theme → $settings_file (applied live to all open windows)"
+                }' > "$tmp_colors"
+              mv "$tmp_colors" "$colors_file"
+              log "Rendered VSCode colors → $colors_file"
+
+              # Merge base settings + color settings into the final settings.json.
+              # settings.json is NOT owned by home-manager so there is no
+              # checkLinkTargets conflict; it is always a plain mutable file.
+              local tmp_merged
+              tmp_merged=$(mktemp)
+              if [[ -e "$base_file" ]]; then
+                if ! jq -s '.[0] * .[1]' "$base_file" "$colors_file" > "$tmp_merged"; then
+                  log_err "Failed to merge base+colors settings; falling back to colors only"
+                  cp "$colors_file" "$tmp_merged"
+                fi
+              else
+                log_err "settings.base.json not found; rebuild home-manager to regenerate it"
+                cp "$colors_file" "$tmp_merged"
+              fi
+              mv "$tmp_merged" "$settings_file"
+              log "Rendered VSCode settings → $settings_file (base + colors merged)"
             }
 
             render_wallpaper() {
