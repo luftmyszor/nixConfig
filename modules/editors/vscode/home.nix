@@ -11,39 +11,64 @@ in
 lib.mkIf cfg.enable {
   programs.vscode = {
     enable = true;
-    enableUpdateCheck = false;
-    enableExtensionUpdateCheck = false;
     package = pkgs.vscode-fhs;
 
-    extensions = with pkgs.vscode-extensions; [
-      formulahendry.code-runner
-      # Nix extentions
-      bbenoist.nix
-      jnoortheen.nix-ide
+    profiles.default = {
+      enableUpdateCheck = false;
+      enableExtensionUpdateCheck = false;
 
-      # C++ extentions
-      ms-vscode.cpptools
+      extensions = with pkgs.vscode-extensions; [
+        formulahendry.code-runner
+        # Nix extensions
+        bbenoist.nix
+        jnoortheen.nix-ide
 
-      # C# extentions
-      ms-dotnettools.vscode-dotnet-runtime
-      ms-dotnettools.csharp
-      ms-dotnettools.csdevkit
+        # C++ extensions
+        ms-vscode.cpptools
 
-      # Qml extentions
+        # C# extensions
+        ms-dotnettools.vscode-dotnet-runtime
+        ms-dotnettools.csharp
+        ms-dotnettools.csdevkit
 
-    ]
-    # ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
-    #   {
-    #     name = "Qt Qml";
-    #     publisher = "Qt Group";
-    #     version = "1.9.0";
-    #     sha256 = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa2";
-    #   }
-    # ]
-    ;
+        # Qml extensions
 
-    # optional: some UI tweaks
-    userSettings = {
+      ]
+      # ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
+      #   {
+      #     name = "Qt Qml";
+      #     publisher = "Qt Group";
+      #     version = "1.9.0";
+      #     sha256 = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa2";
+      #   }
+      # ]
+      ;
+    };
+  };
+  home.packages = [ pkgs.nil ];
+
+  # Before home-manager's checkLinkTargets step, remove settings.json if it
+  # is a regular (mutable) file.  This happens on every rebuild after the
+  # palette-switcher has replaced the nix-store symlink with a merged mutable
+  # file.  Removing it here lets home-manager recreate the managed symlink;
+  # the palette-switcher activation (entryAfter writeBoundary) then merges
+  # settings.base.json + settings.colors.json back into a mutable settings.json.
+  home.activation.removeVscodeMutableSettings = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+    settings_json="${config.xdg.configHome}/Code/User/settings.json"
+    if [[ -f "$settings_json" && ! -L "$settings_json" ]]; then
+      rm -f "$settings_json"
+    fi
+  '';
+
+  # Static (non-color) settings managed by this module.
+  #
+  # Written to settings.base.json as a nix-store symlink — home-manager never
+  # touches settings.json directly, so there is no checkLinkTargets conflict.
+  # The palette-switcher activation reads this file as the base, writes the
+  # live palette colors to settings.colors.json, and merges them into the
+  # final mutable settings.json.
+  xdg.configFile."Code/User/settings.base.json" = {
+    text = builtins.toJSON {
       "editor.formatOnSave" = true;
       "nix.enableLanguageServer" = true;
       "nix.serverPath" = "nil";
@@ -52,10 +77,8 @@ lib.mkIf cfg.enable {
 
       "code-runner.runInTerminal" = true;
       "code-runner.executorMap" = {
-
         "csharp" = "dotnet run";
       };
     };
   };
-  home.packages = [ pkgs.nil ];
 }
