@@ -47,6 +47,19 @@ lib.mkIf cfg.enable {
   };
   home.packages = [ pkgs.nil ];
 
+  # Before home-manager's checkLinkTargets step, remove settings.json if it
+  # is a regular (mutable) file.  This happens on every rebuild after the
+  # palette-switcher has replaced the nix-store symlink with a merged mutable
+  # file.  Removing it here lets home-manager recreate the managed symlink;
+  # the palette-switcher activation (entryAfter writeBoundary) then merges
+  # settings.base.json + settings.colors.json back into a mutable settings.json.
+  home.activation.removeVscodeMutableSettings = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+    settings_json="${config.xdg.configHome}/Code/User/settings.json"
+    if [[ -f "$settings_json" && ! -L "$settings_json" ]]; then
+      rm -f "$settings_json"
+    fi
+  '';
+
   # Static (non-color) settings managed by this module.
   #
   # Written to settings.base.json as a nix-store symlink — home-manager never
