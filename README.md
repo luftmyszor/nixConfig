@@ -209,6 +209,14 @@ Set this to any palette name (`tokyo-night`, `gruvbox`, `nord`, `everforest`, `c
 |---|---|---|
 | vscode | `modules.editors.vscode.enable` | VS Code (FHS build) with Nix, C++, and C# extensions; `nil` LSP included |
 
+### Browsers — `modules/browsers`
+
+| Module | Option | Description |
+|---|---|---|
+| zen | `modules.browsers.zen.enable` | Zen Browser — sets up a managed profile with `userChrome.css` support; live palette theming is applied by `palette-switch` |
+
+> **Live theming for Zen:** When `modules.browsers.zen.enable = true` and `modules.themes.palette-switcher.enable = true`, running `palette-switch <name>` (or `palette-switch apply`) automatically writes a themed `userChrome.css` to `~/.zen/default/chrome/`. The colors update immediately after restarting Zen (or when Zen hot-reloads styles via the developer toolbar).
+
 ---
 
 ## Theme System
