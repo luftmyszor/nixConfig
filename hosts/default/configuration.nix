@@ -112,6 +112,8 @@ in
     vim
     jq
     mupdf
+    zip
+    unzip
   ];
 
   modules.shells.zsh.enable = true;
