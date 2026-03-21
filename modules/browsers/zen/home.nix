@@ -10,28 +10,44 @@ lib.mkIf cfg.enable {
     zenFlake.packages.${system}.default
   ];
 
-  # Enable userChrome.css support.
-  # zen reads but does not write to user.js, so a home.file symlink is safe.
-  home.file.".zen/default/user.js".text = ''
-    // Managed by home-manager – do not edit by hand
-    // Enable custom user stylesheets so userChrome.css is applied
-    user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
-  '';
-
-  # Create the chrome directory and register the profile on first activation.
-  # palette-switch writes ~/.zen/default/chrome/userChrome.css at runtime.
+  # Set up the profile structure for both the legacy ~/.zen/ path and the modern
+  # XDG ~/.config/zen/ path.  Zen Browser migrated to the XDG location but not
+  # all installs will have completed that migration, so we handle both.
+  #
+  # Per https://docs.zen-browser.app/guides/live-editing the three prefs below
+  # are required for userChrome.css to be loaded and for the browser DevTools to
+  # be able to inspect / live-edit the browser UI:
+  #   toolkit.legacyUserProfileCustomizations.stylesheets – loads userChrome.css
+  #   devtools.chrome.enabled                             – enables chrome devtools
+  #   devtools.debugger.remote-enabled                   – enables remote debugger
+  #
+  # user.js is read-only for Zen (it merges into prefs.js on startup), so writing
+  # it from an activation script is safe and avoids the single-path limitation of
+  # home.file.
   home.activation.zen-profile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    ZEN_DIR="$HOME/.zen"
-    CHROME_DIR="$ZEN_DIR/default/chrome"
-    PROFILES_INI="$ZEN_DIR/profiles.ini"
+    setup_zen_profile() {
+      local zen_dir="$1"
+      local profile_dir="$zen_dir/default"
+      local chrome_dir="$profile_dir/chrome"
+      local profiles_ini="$zen_dir/profiles.ini"
 
-    # Ensure the chrome directory exists (palette-switch writes userChrome.css here)
-    mkdir -p "$CHROME_DIR"
+      mkdir -p "$chrome_dir"
 
-    # Register the profile only when no profiles.ini exists yet so that
-    # any user-created profiles are preserved on subsequent activations.
-    if [[ ! -f "$PROFILES_INI" ]]; then
-      cat > "$PROFILES_INI" <<'PROFILES_EOF'
+      # Always (re-)write user.js so prefs stay in sync with this config.
+      # mkdir -p above already created profile_dir, so this write is safe.
+      cat > "$profile_dir/user.js" <<'USER_JS_EOF'
+// Managed by home-manager – do not edit by hand
+// https://docs.zen-browser.app/guides/live-editing
+// Required for userChrome.css to be loaded and for browser DevTools live editing.
+user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+user_pref("devtools.chrome.enabled", true);
+user_pref("devtools.debugger.remote-enabled", true);
+USER_JS_EOF
+
+      # Create profiles.ini only when missing so user-created profiles are
+      # preserved across home-manager activations.
+      if [[ ! -f "$profiles_ini" ]]; then
+        cat > "$profiles_ini" <<'PROFILES_EOF'
 [General]
 StartWithLastProfile=1
 Version=2
@@ -42,6 +58,11 @@ IsRelative=1
 Path=default
 Default=1
 PROFILES_EOF
-    fi
+      fi
+    }
+
+    # Support both the legacy ~/.zen/ profile root and the XDG ~/.config/zen/ root.
+    setup_zen_profile "$HOME/.zen"
+    setup_zen_profile "$HOME/.config/zen"
   '';
 }
