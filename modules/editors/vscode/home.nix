@@ -78,7 +78,9 @@ lib.mkIf cfg.enable {
       "code-runner.runInTerminal" = true;
       "code-runner.executorMap" = {
         "csharp" = "dotnet run";
+        "cpp" = "cd $dir && g++ -std=c++14 *.cpp  -o $fileNameWithoutExt && $dir$fileNameWithoutExt";
       };
+
     };
   };
 }
