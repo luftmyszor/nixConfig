@@ -7,42 +7,44 @@
 
 let
   cfg = config.modules.editors.vscode;
+  qt-qml = pkgs.vscode-utils.extensionFromVscodeMarketplace {
+    name = "qt-qml";
+    publisher = "TheQtCompany";
+    version = "1.13.0";
+    sha256 = "sha256-WPzierXLQM+HdVb0XAx80f4Fdd34Vf7WbFzFapr5VHE=";
+  };
 in
 lib.mkIf cfg.enable {
   programs.vscode = {
     enable = true;
-    package = pkgs.vscode-fhs;
+    package = pkgs.vscode-fhs.overrideAttrs (old: {
+      pname = "vscode";
+    });
 
     profiles.default = {
       enableUpdateCheck = false;
       enableExtensionUpdateCheck = false;
 
-      extensions = with pkgs.vscode-extensions; [
-        formulahendry.code-runner
-        # Nix extensions
-        bbenoist.nix
-        jnoortheen.nix-ide
+      extensions =
+        (with pkgs.vscode-extensions; [
+          formulahendry.code-runner
+          # Nix extensions
+          bbenoist.nix
+          jnoortheen.nix-ide
 
-        # C++ extensions
-        ms-vscode.cpptools
+          # C++ extensions
+          ms-vscode.cpptools
 
-        # C# extensions
-        ms-dotnettools.vscode-dotnet-runtime
-        ms-dotnettools.csharp
-        ms-dotnettools.csdevkit
+          # C# extensions
+          ms-dotnettools.vscode-dotnet-runtime
+          ms-dotnettools.csharp
+          ms-dotnettools.csdevkit
 
-        # Qml extensions
+          # Qml extensions
+          #qt-qml
+        ])
+        ++ [ qt-qml ];
 
-      ]
-      # ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
-      #   {
-      #     name = "Qt Qml";
-      #     publisher = "Qt Group";
-      #     version = "1.9.0";
-      #     sha256 = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa2";
-      #   }
-      # ]
-      ;
     };
   };
   home.packages = [ pkgs.nil ];
