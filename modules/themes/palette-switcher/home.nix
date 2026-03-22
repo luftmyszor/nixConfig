@@ -111,9 +111,9 @@ let
       log_err() { echo "[palette-switch] ERROR: $*" >&2; }
 
       # ── Helpers ──────────────────────────────────────────────────────────
-      # shellcheck disable=SC2034
       # Variables set here are consumed by dynamically-sourced sub-scripts;
-      # shellcheck cannot see those usages so we suppress the false positives.
+      # static analysis cannot see those usages so we suppress the false positives.
+      # shellcheck disable=SC2034
       load_palette() {
         if [[ ! -f "$ACTIVE_LINK" ]]; then
           log_err "No active palette found at $ACTIVE_LINK"
