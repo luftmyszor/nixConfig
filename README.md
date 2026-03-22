@@ -209,6 +209,14 @@ Set this to any palette name (`tokyo-night`, `gruvbox`, `nord`, `everforest`, `c
 |---|---|---|
 | vscode | `modules.editors.vscode.enable` | VS Code (FHS build) with Nix, C++, and C# extensions; `nil` LSP included |
 
+### Browsers — `modules/browsers`
+
+| Module | Option | Description |
+|---|---|---|
+| zen | `modules.browsers.zen.enable` | Zen Browser — installed from the zen-browser-flake; live theming via `palette-switch` (writes `zen-palette.css` to every Zen profile's `chrome/` directory) |
+
+> **Zen live theming setup**: on first use, launch Zen once to create its profile, then run `palette-switch apply`.  The activation script (`zen-live-theming`) will configure `userChrome.css` and enable stylesheet support automatically on subsequent `home-manager switch` runs.
+
 ---
 
 ## Theme System
@@ -313,6 +321,7 @@ palette-switch apply
 | **Waybar** | `~/.config/waybar/normal-style.css` | `pkill -SIGUSR2 waybar` |
 | **Hyprland** | `~/.config/hypr/palette-colors.conf` | `hyprctl reload` |
 | **Neovim** | `~/.config/nvim/lua/palette-colors.lua` | Running instances signaled via socket |
+| **Zen Browser** | `~/.zen/*/chrome/zen-palette.css` | Reloaded on next Zen window open |
 | **Wallpaper** | `~/.local/share/wallpaper.png` | `swww img` (if swww is running) |
 
 ##### Neovim integration
