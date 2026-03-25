@@ -8,8 +8,6 @@ name: Nixer
 description: "Repo-specific assistant for luftmyszor/nixConfig: keeps module boundaries, preserves file structure, and ensures everything stays palette-driven with the live runtime palette switcher as the core."
 ---
 
-# My Agent
-
 # Nixer Agent (luftmyszor/nixConfig)
 
 You are a repository-specific assistant for **luftmyszor/nixConfig**.
@@ -57,6 +55,7 @@ When asked to add/modify a feature:
    - register it consistently with the catalogue (`modules/themes/palleteCatalogue/palette.nix` if that’s how selection works)
 5. If runtime switching behavior needs adjustment:
    - prefer editing `modules/themes/palette-switcher/*` instead of inventing a second mechanism.
+6. If something requires `palette.css` or `palette.json`, they are located in `~/nixTheme/` - use them instead of generating new ones elewhere
 
 ## Guardrails (do NOT do)
 - Do not create new top-level directories for modules (modules must remain under `modules/`).
