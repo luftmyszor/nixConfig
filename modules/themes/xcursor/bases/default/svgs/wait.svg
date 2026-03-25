@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- Spinner / wait cursor – hotspot at (16, 16) centre -->
+  <!-- Background track circle -->
+  <circle cx="16" cy="16" r="11"
+          fill="none" stroke="@@MUTED@@" stroke-width="4"/>
+  <!-- Primary-coloured leading arc (~270° of progress) -->
+  <!-- Arc from top (16,5) going clockwise, ending at left (5,16) -->
+  <path d="M 16,5 A 11,11 0 1,1 5,16"
+        fill="none" stroke="@@PRIMARY@@" stroke-width="4"
+        stroke-linecap="round"/>
+  <!-- Centre dot -->
+  <circle cx="16" cy="16" r="2.5" fill="@@PRIMARY@@"/>
+</svg>

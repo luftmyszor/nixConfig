@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- Pointing hand cursor – hotspot at (13, 3) fingertip -->
+  <!-- Index finger -->
+  <rect x="11" y="3" width="5" height="14" rx="2.5"
+        fill="@@FG@@" stroke="@@BG@@" stroke-width="1.5"/>
+  <!-- Middle finger stub -->
+  <rect x="17" y="10" width="4" height="9" rx="2"
+        fill="@@FG@@" stroke="@@BG@@" stroke-width="1.5"/>
+  <!-- Ring finger stub -->
+  <rect x="22" y="12" width="4" height="7" rx="2"
+        fill="@@FG@@" stroke="@@BG@@" stroke-width="1.5"/>
+  <!-- Palm -->
+  <path d="M 8,17 L 8,23 Q 8,29 14,29 L 22,29 Q 26,29 26,24 L 26,19 Q 26,17 24,17 L 11,17 Q 8,17 8,17 Z"
+        fill="@@FG@@" stroke="@@BG@@" stroke-width="1.5" stroke-linejoin="round"/>
+  <!-- Accent: fingertip highlight -->
+  <circle cx="13" cy="4" r="1.5" fill="@@PRIMARY@@"/>
+</svg>

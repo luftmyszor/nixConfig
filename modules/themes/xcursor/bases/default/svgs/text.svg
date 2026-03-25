@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- I-beam text cursor – hotspot at (16, 16) centre -->
+  <!-- Vertical shaft -->
+  <rect x="15" y="8" width="2" height="16" fill="@@FG@@"/>
+  <!-- Top serif bar -->
+  <rect x="10" y="7" width="12" height="2.5" rx="1"
+        fill="@@FG@@" stroke="@@BG@@" stroke-width="0.5"/>
+  <!-- Bottom serif bar -->
+  <rect x="10" y="22.5" width="12" height="2.5" rx="1"
+        fill="@@FG@@" stroke="@@BG@@" stroke-width="0.5"/>
+  <!-- Centre accent dot -->
+  <circle cx="16" cy="16" r="1.5" fill="@@PRIMARY@@"/>
+</svg>
