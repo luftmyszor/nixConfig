@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- Classic arrow cursor – hotspot at (4, 2) tip -->
+  <polygon
+    points="4,2 4,24 9,18 14,29 18,27 13,17 22,17"
+    fill="@@FG@@"
+    stroke="@@BG@@"
+    stroke-width="2"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  />
+  <!-- Primary-colour accent dot near tip -->
+  <circle cx="5" cy="3" r="1.5" fill="@@PRIMARY@@"/>
+</svg>
