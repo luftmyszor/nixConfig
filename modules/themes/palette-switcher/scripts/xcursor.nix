@@ -55,7 +55,8 @@
           # Hyprland caches themes by name internally, so reusing "palette-cursor"
           # means it never re-reads the newly generated files from disk.
           # A fresh name on every run guarantees a cache-miss and a real disk read.
-          local theme_name="palette-cursor-$(date +%s)"
+          local theme_name
+          theme_name="palette-cursor-$(date +%s)"
           local out_dir="$HOME/.local/share/icons/$theme_name"
           local cursors_dir="$out_dir/cursors"
           mkdir -p "$cursors_dir"
