@@ -102,12 +102,12 @@ THEME_EOF
           local scaled_xhot scaled_yhot
           scaled_xhot=$(( xhot * size / 32 ))
           scaled_yhot=$(( yhot * size / 32 ))
-          local tmp_png="$tmp_dir/${cursor_name}_${size}.png"
+          local tmp_png="$tmp_dir/''${cursor_name}_''${size}.png"
           rsvg-convert -w "$size" -h "$size" "$tmp_svg" -o "$tmp_png"
           # xcursorgen config line: <size> <xhot> <yhot> <filename> <frame-delay-ms>
           # Frame delay (50 ms) is required for animated cursors; for static cursors
           # (single frame) the field is mandatory but the value is ignored.
-          echo "$size $scaled_xhot $scaled_yhot ${cursor_name}_${size}.png 50" >> "$cfg_file"
+          echo "$size $scaled_xhot $scaled_yhot ''${cursor_name}_''${size}.png 50" >> "$cfg_file"
         done
 
         # Assemble all sizes into a single binary XCursor file
@@ -117,26 +117,18 @@ THEME_EOF
       # ── Install cursor name aliases ─────────────────────────────────────────
       local aliases_file="$base_dir/aliases"
       if [[ -f "$aliases_file" ]]; then
-        while IFS= read -r line; do
-          # Strip leading/trailing whitespace; skip blank lines and comments
-          line="${line#"${line%%[![:space:]]*}"}"
-          [[ -z "$line" || "$line" == "#"* ]] && continue
-          local alias_name target_name
-          alias_name="${line%%=*}"
-          target_name="${line#*=}"
-          # Trim whitespace
-          alias_name="${alias_name%"${alias_name##*[![:space:]]}"}"
-          target_name="${target_name%"${target_name##*[![:space:]]}"}"
+        # Filter out blank lines and comment lines, then split on '='
+        while IFS='=' read -r alias_name target_name; do
           [[ -z "$alias_name" || -z "$target_name" ]] && continue
           local target_cursor="$cursors_dir/$target_name"
           if [[ -f "$target_cursor" ]]; then
             ln -sf "$target_name" "$cursors_dir/$alias_name"
           fi
-        done < "$aliases_file"
+        done < <(grep -v '^[[:space:]]*#' "$aliases_file" | grep -v '^[[:space:]]*$' | grep '=')
       fi
 
       rm -rf "$tmp_dir"
-      log "XCursor: generated palette-cursor (base: $base_theme, size: ${cursor_size}px)"
+      log "XCursor: generated palette-cursor (base: $base_theme, size: ''${cursor_size}px)"
     }
 
     # Helper: update (or create) a GTK settings.ini with the palette-cursor
@@ -174,7 +166,7 @@ THEME_EOF
       # ── Apply via Hyprland ────────────────────────────────────────────────
       if command -v hyprctl > /dev/null 2>&1 && hyprctl version > /dev/null 2>&1; then
         if hyprctl setcursor palette-cursor "$cursor_size"; then
-          log "XCursor: applied via hyprctl setcursor (size: ${cursor_size})"
+          log "XCursor: applied via hyprctl setcursor (size: ''${cursor_size})"
         else
           log_err "XCursor: hyprctl setcursor failed"
         fi
