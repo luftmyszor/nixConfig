@@ -166,6 +166,9 @@
 
           # ── Apply via Hyprland ────────────────────────────────────────────────
           if command -v hyprctl > /dev/null 2>&1 && hyprctl version > /dev/null 2>&1; then
+            # Hyprland caches cursor themes by name. Switching away first forces it
+            # to drop the cached palette-cursor and reload it fresh from disk.
+            hyprctl setcursor default "$cursor_size" > /dev/null 2>&1 || true
             if hyprctl setcursor palette-cursor "$cursor_size"; then
               log "XCursor: applied via hyprctl setcursor (size: ''${cursor_size})"
             else
