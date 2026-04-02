@@ -1,0 +1,70 @@
+# Cursor name aliases – format: alias=target
+# 'target' must be one of the SVG filenames (without .svg) in this base theme.
+
+# Arrow / default pointer
+left_ptr=default
+arrow=default
+top_left_arrow=default
+x-cursor=default
+draft_large=default
+draft_small=default
+
+# Hand / pointer (links, buttons)
+hand=pointer
+hand1=pointer
+hand2=pointer
+pointing_hand=pointer
+openhand=pointer
+closedhand=pointer
+grab=pointer
+grabbing=pointer
+zoom-in=pointer
+zoom-out=pointer
+cell=pointer
+context-menu=pointer
+help=pointer
+alias=pointer
+copy=pointer
+
+# Text / I-beam
+ibeam=text
+xterm=text
+vertical-text=text
+
+# Loading / busy
+watch=wait
+clock=wait
+left_ptr_watch=wait
+progress=wait
+half-busy=wait
+
+# Crosshair
+cross=crosshair
+
+# Not allowed / no-drop
+kill=not-allowed
+no-drop=not-allowed
+crossed_circle=not-allowed
+forbidden=not-allowed
+
+# Resize / move cursors
+move=move
+all-scroll=move
+fleur=move
+size_all=move
+e-resize=resize-h
+w-resize=resize-h
+ew-resize=resize-h
+col-resize=resize-h
+sb_h_double_arrow=resize-h
+n-resize=resize-v
+s-resize=resize-v
+ns-resize=resize-v
+row-resize=resize-v
+sb_v_double_arrow=resize-v
+nw-resize=resize-nw-se
+se-resize=resize-nw-se
+nwse-resize=resize-nw-se
+ne-resize=resize-ne-sw
+sw-resize=resize-ne-sw
+nesw-resize=resize-ne-sw

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- Crosshair cursor – hotspot at (16, 16) centre -->
+  <!-- Left segment -->
+  <rect x="2" y="15" width="10" height="2" fill="@@FG@@"/>
+  <!-- Right segment -->
+  <rect x="20" y="15" width="10" height="2" fill="@@FG@@"/>
+  <!-- Top segment -->
+  <rect x="15" y="2" width="2" height="10" fill="@@FG@@"/>
+  <!-- Bottom segment -->
+  <rect x="15" y="20" width="2" height="10" fill="@@FG@@"/>
+  <!-- Centre circle (primary accent) -->
+  <circle cx="16" cy="16" r="3.5" fill="none"
+          stroke="@@PRIMARY@@" stroke-width="1.5"/>
+  <circle cx="16" cy="16" r="1" fill="@@PRIMARY@@"/>
+</svg>

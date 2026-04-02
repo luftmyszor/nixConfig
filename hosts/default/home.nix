@@ -97,6 +97,7 @@ in
   modules.window-managers.hyprland.enable = true;
 
   modules.themes.palette-switcher.enable = true;
+  modules.themes.xcursor.enable = true;
 
   modules.services.quickshell.enable = true;
   modules.services.waybar.enable = false;
