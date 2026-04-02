@@ -1,11 +1,248 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-  <!-- Vertical resize cursor (↕) – hotspot at (16, 16) centre -->
-  <!-- Top arrowhead -->
-  <polygon points="16,6 12,11 20,11"
-           fill="@@FG@@" stroke="@@BG@@" stroke-width="1" stroke-linejoin="round"/>
-  <!-- Vertical shaft -->
-  <rect x="15" y="11" width="2" height="10" fill="@@FG@@"/>
-  <!-- Bottom arrowhead -->
-  <polygon points="16,26 12,21 20,21"
-           fill="@@FG@@" stroke="@@BG@@" stroke-width="1" stroke-linejoin="round"/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="32"
+   height="32"
+   viewBox="0 0 32 32"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="resize-v.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2">
+    <inkscape:path-effect
+       effect="mirror_symmetry"
+       start_point="16.000069,31.999931"
+       end_point="16.000069,-6.9e-05"
+       center_point="16.000069,15.999931"
+       id="path-effect7"
+       is_visible="true"
+       lpeversion="1.2"
+       lpesatellites=""
+       mode="horizontal"
+       discard_orig_path="false"
+       fuse_paths="true"
+       oposite_fuse="false"
+       split_items="false"
+       split_open="false"
+       link_styles="false" />
+    <inkscape:path-effect
+       effect="mirror_symmetry"
+       start_point="6.9e-05,15.999931"
+       end_point="32.000069,15.999931"
+       center_point="16.000069,15.999931"
+       id="path-effect5"
+       is_visible="true"
+       lpeversion="1.2"
+       lpesatellites=""
+       mode="vertical"
+       discard_orig_path="false"
+       fuse_paths="true"
+       oposite_fuse="true"
+       split_items="false"
+       split_open="false"
+       link_styles="false" />
+    <linearGradient
+       id="linearGradient2"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:@@PRIMARY@@;stop-opacity:1;"
+         offset="0"
+         id="stop2" />
+      <stop
+         style="stop-color:@@SECONDARY@@;stop-opacity:1;"
+         offset="1"
+         id="stop3" />
+    </linearGradient>
+    <inkscape:path-effect
+       effect="mirror_symmetry"
+       start_point="0,16"
+       end_point="32,16"
+       center_point="16,16"
+       id="path-effect2"
+       is_visible="true"
+       lpeversion="1.2"
+       lpesatellites=""
+       mode="horizontal"
+       discard_orig_path="false"
+       fuse_paths="true"
+       oposite_fuse="true"
+       split_items="false"
+       split_open="false"
+       link_styles="false" />
+    <inkscape:path-effect
+       effect="mirror_symmetry"
+       start_point="16,0"
+       end_point="16,32"
+       center_point="16,16"
+       id="path-effect1"
+       is_visible="true"
+       lpeversion="1.2"
+       lpesatellites=""
+       mode="vertical"
+       discard_orig_path="false"
+       fuse_paths="true"
+       oposite_fuse="false"
+       split_items="false"
+       split_open="false"
+       link_styles="false" />
+    <inkscape:path-effect
+       effect="offset"
+       id="path-effect14"
+       is_visible="true"
+       lpeversion="1.3"
+       linejoin_type="miter"
+       unit="mm"
+       offset="0.5"
+       miter_limit="4"
+       attempt_force_join="false"
+       update_on_knot_move="true" />
+    <inkscape:path-effect
+       effect="mirror_symmetry"
+       start_point="0,16"
+       end_point="32,16"
+       center_point="16,16"
+       id="path-effect13"
+       is_visible="true"
+       lpeversion="1.2"
+       lpesatellites=""
+       mode="horizontal"
+       discard_orig_path="false"
+       fuse_paths="true"
+       oposite_fuse="true"
+       split_items="false"
+       split_open="false"
+       link_styles="false" />
+    <inkscape:path-effect
+       effect="mirror_symmetry"
+       start_point="16,0"
+       end_point="16,32"
+       center_point="16,16"
+       id="path-effect11"
+       is_visible="true"
+       lpeversion="1.2"
+       lpesatellites=""
+       mode="vertical"
+       discard_orig_path="false"
+       fuse_paths="false"
+       oposite_fuse="false"
+       split_items="false"
+       split_open="false"
+       link_styles="false" />
+    <inkscape:path-effect
+       effect="offset"
+       id="path-effect9"
+       is_visible="true"
+       lpeversion="1.3"
+       linejoin_type="miter"
+       unit="mm"
+       offset="0.5"
+       miter_limit="4"
+       attempt_force_join="false"
+       update_on_knot_move="true" />
+    <inkscape:path-effect
+       effect="mirror_symmetry"
+       start_point="0,16"
+       end_point="32,16"
+       center_point="16,16"
+       id="path-effect8"
+       is_visible="true"
+       lpeversion="1.2"
+       lpesatellites=""
+       mode="horizontal"
+       discard_orig_path="false"
+       fuse_paths="true"
+       oposite_fuse="true"
+       split_items="false"
+       split_open="false"
+       link_styles="false" />
+    <inkscape:path-effect
+       effect="mirror_symmetry"
+       start_point="16,0"
+       end_point="16,32"
+       center_point="16,16"
+       id="path-effect6"
+       is_visible="true"
+       lpeversion="1.2"
+       lpesatellites=""
+       mode="vertical"
+       discard_orig_path="false"
+       fuse_paths="false"
+       oposite_fuse="false"
+       split_items="false"
+       split_open="false"
+       link_styles="false" />
+    <inkscape:path-effect
+       effect="mirror_symmetry"
+       start_point="0,16"
+       end_point="32,16"
+       center_point="16,16"
+       id="path-effect4"
+       is_visible="true"
+       lpeversion="1.2"
+       lpesatellites=""
+       mode="horizontal"
+       discard_orig_path="false"
+       fuse_paths="true"
+       oposite_fuse="true"
+       split_items="false"
+       split_open="false"
+       link_styles="false" />
+    <inkscape:path-effect
+       effect="mirror_symmetry"
+       start_point="16,0"
+       end_point="16,32"
+       center_point="16,16"
+       id="path-effect3"
+       is_visible="true"
+       lpeversion="1.2"
+       lpesatellites=""
+       mode="vertical"
+       discard_orig_path="false"
+       fuse_paths="false"
+       oposite_fuse="false"
+       split_items="false"
+       split_open="false"
+       link_styles="false" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient2"
+       id="linearGradient3"
+       x1="0.6190033"
+       y1="16"
+       x2="31.380722"
+       y2="16"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="28.186244"
+     inkscape:cx="15.663669"
+     inkscape:cy="14.883147"
+     inkscape:window-width="1888"
+     inkscape:window-height="1168"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <path
+     id="path1"
+     style="fill:url(#linearGradient3)"
+     d="M 10.693359,11.974609 C 7.8508264,12.054015 5.7327141,13.121235 4.34375,13.648438 2.7718164,14.245089 0.86074179,15.141722 0.84179688,16 0.86074179,16.858278 2.7718164,17.754911 4.34375,18.351562 6.1957022,19.0545 9.3434199,20.717331 13.777344,19.71875 11.053642,19.503098 9.8584925,18.80636 8.8378906,18.244141 7.6801715,17.606389 7.1512367,16.729253 7.1132812,16 7.1512367,15.270747 7.6801715,14.393611 8.8378906,13.755859 9.8584925,13.19364 11.053642,12.496902 13.777344,12.28125 12.668863,12.031605 11.64087,11.948141 10.693359,11.974609 Z m 10.61342,0 c 2.842533,0.07941 4.960645,1.146626 6.349609,1.673829 1.571934,0.596651 3.483008,1.493284 3.501953,2.351562 -0.01894,0.858278 -1.930019,1.754911 -3.501953,2.351562 -1.851952,0.702938 -4.99967,2.365769 -9.433594,1.367188 2.723702,-0.215652 3.918851,-0.91239 4.939453,-1.474609 1.157719,-0.637752 1.686654,-1.514888 1.72461,-2.244141 -0.03796,-0.729253 -0.566891,-1.606389 -1.72461,-2.244141 -1.020602,-0.562219 -2.215751,-1.258957 -4.939453,-1.474609 1.108481,-0.249645 2.136474,-0.333109 3.083985,-0.306641 z m -5.310685,1.841797 C 14.893841,13.832382 13.772855,14.575217 13.742188,16 c 0.03067,1.424783 1.151653,2.167618 2.253906,2.183594 0.0013,1.9e-5 0.0026,-1.3e-5 0.0039,0 0.0013,-1.3e-5 0.0026,1.9e-5 0.0039,0 1.102253,-0.01598 2.223239,-0.758811 2.253906,-2.183594 -0.03067,-1.424783 -1.151653,-2.167618 -2.253906,-2.183594 -0.0013,-1.9e-5 -0.0026,1.3e-5 -0.0039,0 -0.0013,1.3e-5 -0.0026,-1.9e-5 -0.0039,0 z"
+     sodipodi:nodetypes="zzzscszzczz"
+     inkscape:label="Base"
+     inkscape:path-effect="#path-effect5;#path-effect7"
+     inkscape:original-d="M 4.3442606,13.648304 C 2.7722849,14.244971 0.86098874,15.141701 0.84214474,16 0.82330074,16.8583 7.1209506,16.852119 7.1118419,16.103651 7.1027319,15.35518 7.6247582,14.424718 8.8379225,13.756423 9.8585244,13.194204 11.053674,12.496557 13.777376,12.280905 9.3434521,11.282324 6.1962128,12.94537 4.3442606,13.648307 Z m 11.6510244,0.168857 c -1.114281,0.01615 -2.246454,0.774267 -2.253295,2.229656 -0.0068,1.455389 2.694657,0.198261 2.694657,0.198261 0,0 0.672919,-2.444065 -0.441362,-2.427917 z"
+     transform="rotate(90,16,15.999931)" />
 </svg>

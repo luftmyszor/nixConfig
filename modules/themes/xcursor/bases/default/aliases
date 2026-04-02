@@ -14,16 +14,16 @@ hand=pointer
 hand1=pointer
 hand2=pointer
 pointing_hand=pointer
-openhand=pointer
+openhand=hand-open
 closedhand=pointer
-grab=pointer
+grab=hand-open
 grabbing=pointer
 zoom-in=pointer
 zoom-out=pointer
 cell=pointer
 context-menu=pointer
 help=pointer
-alias=pointer
+alias=open-hand
 copy=pointer
 
 # Text / I-beam
