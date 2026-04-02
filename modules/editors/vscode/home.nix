@@ -14,9 +14,6 @@ lib.mkIf cfg.enable {
     package = pkgs.vscode-fhs;
 
     profiles.default = {
-      enableUpdateCheck = false;
-      enableExtensionUpdateCheck = false;
-
       extensions = with pkgs.vscode-extensions; [
         formulahendry.code-runner
         # Nix extensions
@@ -47,15 +44,13 @@ lib.mkIf cfg.enable {
   };
   home.packages = [ pkgs.nil ];
 
-  # Before home-manager's checkLinkTargets step, remove settings.json if it
-  # is a regular (mutable) file.  This happens on every rebuild after the
-  # palette-switcher has replaced the nix-store symlink with a merged mutable
-  # file.  Removing it here lets home-manager recreate the managed symlink;
-  # the palette-switcher activation (entryAfter writeBoundary) then merges
-  # settings.base.json + settings.colors.json back into a mutable settings.json.
+  # Before home-manager's checkLinkTargets step, remove settings.json if it is
+  # a nix-store symlink (legacy from a previous configuration that let
+  # home-manager manage it).  Plain mutable files written by the palette-switcher
+  # are kept as-is — they have the right colors and can be overwritten in-place.
   home.activation.removeVscodeMutableSettings = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
     settings_json="${config.xdg.configHome}/Code/User/settings.json"
-    if [[ -f "$settings_json" && ! -L "$settings_json" ]]; then
+    if [[ -L "$settings_json" ]]; then
       rm -f "$settings_json"
     fi
   '';
@@ -80,6 +75,13 @@ lib.mkIf cfg.enable {
         "csharp" = "dotnet run";
         "cpp" = "cd $dir && g++ -std=c++14 *.cpp  -o $fileNameWithoutExt && $dir$fileNameWithoutExt";
       };
+
+      # Disable auto-update and extension update checks (previously set via
+      # profiles.default.enableUpdateCheck/enableExtensionUpdateCheck, which caused
+      # home-manager to write settings.json as a read-only nix-store symlink and
+      # prevented the palette-switcher from hot-reloading colours).
+      "update.mode" = "none";
+      "extensions.autoCheckUpdates" = false;
 
     };
   };

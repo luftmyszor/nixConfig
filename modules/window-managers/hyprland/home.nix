@@ -36,6 +36,25 @@ in
           "vfr" = "true";
         };
 
+        # Propagate cursor theme to every process Hyprland spawns, including
+        # XWayland clients such as VSCode.  Without these, XWayland apps can't
+        # find the generated theme and fall back to the system default.
+        # ELECTRON_OZONE_PLATFORM_HINT=auto makes Electron apps (VSCode, etc.)
+        # prefer the native Wayland backend over XWayland, so they use the
+        # compositor's cursor directly instead of relying on X11 cursor lookup.
+        # XCURSOR_PATH ensures both the legacy ~/.icons and the XDG
+        # ~/.local/share/icons paths are searched – Chromium/Electron uses its
+        # own cursor lookup that does NOT fall back to XDG paths by default.
+        env =
+          lib.optionals config.modules.themes.xcursor.enable [
+            "XCURSOR_THEME,palette-cursor"
+            "XCURSOR_SIZE,${toString config.modules.themes.xcursor.size}"
+            "XCURSOR_PATH,$HOME/.icons:$HOME/.local/share/icons:/usr/share/icons"
+          ]
+          ++ [
+            "ELECTRON_OZONE_PLATFORM_HINT,auto"
+          ];
+
         monitor = [
           ", 1920x1200, auto, 1"
         ];
