@@ -16,7 +16,7 @@
 
     size = lib.mkOption {
       type = lib.types.int;
-      default = 24;
+      default = 30;
       description = "Cursor size in pixels (used for XCURSOR_SIZE and hyprctl setcursor).";
     };
   };

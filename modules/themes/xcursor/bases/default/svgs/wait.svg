@@ -1,13 +1,74 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="32"
+   height="32"
+   viewBox="0 0 32 32"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="wait.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2">
+    <linearGradient
+       id="linearGradient21"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:@@PRIMARY@@;stop-opacity:1;"
+         offset="0.20280196"
+         id="stop22" />
+      <stop
+         style="stop-color:@@SECONDARY@@;stop-opacity:1;"
+         offset="0.37201312"
+         id="stop23" />
+    </linearGradient>
+    <linearGradient
+       id="swatch8"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#9d4b4b;stop-opacity:1;"
+         offset="0"
+         id="stop8" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient21"
+       id="linearGradient23"
+       x1="7.4608541"
+       y1="7.4608536"
+       x2="24.539145"
+       y2="24.539145"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="24.251065"
+     inkscape:cx="15.071503"
+     inkscape:cy="17.793033"
+     inkscape:window-width="1888"
+     inkscape:window-height="1168"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
   <!-- Spinner / wait cursor – hotspot at (16, 16) centre -->
   <!-- Background track circle -->
-  <circle cx="16" cy="16" r="11"
-          fill="none" stroke="@@MUTED@@" stroke-width="4"/>
   <!-- Primary-coloured leading arc (~270° of progress) -->
   <!-- Arc from top (16,5) going clockwise, ending at left (5,16) -->
-  <path d="M 16,5 A 11,11 0 1,1 5,16"
-        fill="none" stroke="@@PRIMARY@@" stroke-width="4"
-        stroke-linecap="round"/>
   <!-- Centre dot -->
-  <circle cx="16" cy="16" r="2.5" fill="@@PRIMARY@@"/>
+  <path
+     id="rect7"
+     style="fill-opacity:1;stroke-width:1.748;fill:url(#linearGradient23);stroke-dasharray:none"
+     d="M 15.820312 4.1035156 C 9.2297156 4.1035156 3.9238281 9.4094031 3.9238281 16 C 3.9238281 22.590597 9.2297156 27.896484 15.820312 27.896484 L 16.179688 27.896484 C 22.770284 27.896484 28.076172 22.590597 28.076172 16 C 28.076172 9.4094031 22.770284 4.1035156 16.179688 4.1035156 L 15.820312 4.1035156 z M 15.869141 7.3554688 L 16.130859 7.3554688 C 20.920332 7.3554688 24.775391 11.210528 24.775391 16 C 24.775391 20.789472 20.920332 24.644531 16.130859 24.644531 L 15.869141 24.644531 C 11.079668 24.644531 7.2246094 20.789472 7.2246094 16 C 7.2246094 11.210528 11.079668 7.3554687 15.869141 7.3554688 z " />
 </svg>
