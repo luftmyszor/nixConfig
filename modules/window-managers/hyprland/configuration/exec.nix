@@ -1,4 +1,4 @@
-{ config, kgs, lib, ... }:
+{ config, lib, ... }:
 let
   cfg = config.modules.window-managers.hyprland;
 in
@@ -7,5 +7,20 @@ in
     exec = [
       "echo s"
     ];
+
+    # Run once at compositor startup to apply the full palette: renders
+    # colours for Waybar/Wofi/Ghostty/etc. and calls hyprctl setcursor so
+    # the cursor theme is live immediately.  home-manager activation already
+    # generates the cursor files, but hyprctl must be called while Hyprland
+    # is running, hence the exec-once here.
+    exec-once =
+      lib.optionals config.modules.themes.palette-switcher.enable [
+        "palette-switch apply"
+      ]
+      # Load X resources so XWayland clients (e.g. Electron apps that fall back
+      # to XWayland) pick up the cursor theme from the X resource database.
+      ++ lib.optionals config.modules.themes.xcursor.enable [
+        "xrdb -merge ~/.Xresources"
+      ];
   };
 }
