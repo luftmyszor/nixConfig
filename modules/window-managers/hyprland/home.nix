@@ -39,10 +39,17 @@ in
         # Propagate cursor theme to every process Hyprland spawns, including
         # XWayland clients such as VSCode.  Without these, XWayland apps can't
         # find the generated theme and fall back to the system default.
-        env = lib.optionals config.modules.themes.xcursor.enable [
-          "XCURSOR_THEME,palette-cursor"
-          "XCURSOR_SIZE,${toString config.modules.themes.xcursor.size}"
-        ];
+        # ELECTRON_OZONE_PLATFORM_HINT=auto makes Electron apps (VSCode, etc.)
+        # prefer the native Wayland backend over XWayland, so they use the
+        # compositor's cursor directly instead of relying on X11 cursor lookup.
+        env =
+          lib.optionals config.modules.themes.xcursor.enable [
+            "XCURSOR_THEME,palette-cursor"
+            "XCURSOR_SIZE,${toString config.modules.themes.xcursor.size}"
+          ]
+          ++ [
+            "ELECTRON_OZONE_PLATFORM_HINT,auto"
+          ];
 
         monitor = [
           ", 1920x1200, auto, 1"
