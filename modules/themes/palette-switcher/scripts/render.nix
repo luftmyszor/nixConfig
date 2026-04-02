@@ -362,7 +362,13 @@ CSS_EOF
         log_err "settings.base.json not found; rebuild home-manager to regenerate it"
         cp "$colors_file" "$tmp_merged"
       fi
-      mv "$tmp_merged" "$settings_file"
+      # Write the merged JSON into settings.json *in-place* (overwrite content,
+      # keep the same inode) so VSCode's inotify watcher detects the change and
+      # hot-reloads colours without requiring a manual restart.
+      # `cat > file` truncates and rewrites the existing inode; `mv` would swap
+      # inodes and the watcher would miss the update entirely.
+      cat "$tmp_merged" > "$settings_file"
+      rm -f "$tmp_merged"
       log "Rendered VSCode settings → $settings_file (base + colors merged)"
     }
 
