@@ -362,13 +362,26 @@ CSS_EOF
         log_err "settings.base.json not found; rebuild home-manager to regenerate it"
         cp "$colors_file" "$tmp_merged"
       fi
-      # Write the merged JSON into settings.json *in-place* (overwrite content,
-      # keep the same inode) so VSCode's inotify watcher detects the change and
-      # hot-reloads colours without requiring a manual restart.
-      # `cat > file` truncates and rewrites the existing inode; `mv` would swap
-      # inodes and the watcher would miss the update entirely.
-      cat "$tmp_merged" > "$settings_file"
-      rm -f "$tmp_merged"
+      # Write the merged JSON into settings.json.
+      # settings.json must be a plain mutable file for VSCode to hot-reload it
+      # via inotify.  If it is still a nix-store symlink (e.g. first run after
+      # a fresh home-manager activation), remove the symlink first so we can
+      # create a real file in its place.  On all subsequent calls the file
+      # already exists as a regular file and `cat >` overwrites it *in-place*,
+      # preserving the inode so VSCode's inotify watcher fires immediately and
+      # colours change without a window restart.
+      if [[ -L "$settings_file" ]]; then
+        rm -f "$settings_file"
+      fi
+      if [[ -f "$settings_file" ]]; then
+        # In-place overwrite: inode is preserved → VSCode hot-reloads via inotify
+        cat "$tmp_merged" > "$settings_file"
+        rm -f "$tmp_merged"
+      else
+        # File does not yet exist: create it (new inode; VSCode picks it up via
+        # directory-level inotify watch and on next open)
+        mv "$tmp_merged" "$settings_file"
+      fi
       log "Rendered VSCode settings → $settings_file (base + colors merged)"
     }
 
