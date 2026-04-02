@@ -35,6 +35,7 @@ lib.mkIf cfg.enable {
   home.packages = [
     pkgs.librsvg         # provides rsvg-convert
     pkgs.xorg.xcursorgen # provides xcursorgen
+    pkgs.xorg.xrdb       # provides xrdb (for XWayland cursor theme via X resources)
   ];
 
   # ── Deploy base theme assets and the runtime config ───────────────────────
@@ -49,6 +50,17 @@ lib.mkIf cfg.enable {
         baseTheme = cfg.baseTheme;
         size = cfg.size;
       };
+
+      # XWayland (and any X11/Electron app running over it) reads the cursor
+      # theme from the X resource database rather than XCURSOR_THEME.  This
+      # file is loaded by Hyprland's exec-once via `xrdb -merge ~/.Xresources`
+      # so that apps like VSCode pick up the palette-cursor theme even when
+      # they fall back to XWayland.  The stable "palette-cursor" name is used
+      # so this file never needs to change across palette switches.
+      ".Xresources".text = ''
+        Xcursor.theme: palette-cursor
+        Xcursor.size:  ${toString cfg.size}
+      '';
     }
   ];
 
