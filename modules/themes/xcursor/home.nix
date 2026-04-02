@@ -67,13 +67,19 @@ lib.mkIf cfg.enable {
   # ── Cursor environment variables ───────────────────────────────────────────
   # XCURSOR_THEME points all XCursor-aware apps to the generated theme.
   # XCURSOR_SIZE is used by Wayland compositors and XWayland.
+  # XCURSOR_PATH extends the cursor search path to include the legacy ~/.icons
+  # directory AND the XDG directory so every cursor loader finds the theme.
   home.sessionVariables = {
     XCURSOR_THEME = "palette-cursor";
     XCURSOR_SIZE = toString cfg.size;
+    XCURSOR_PATH = "$HOME/.icons:$HOME/.local/share/icons:/usr/share/icons";
   };
 
-  # ── Ensure the icons directory exists for the generated theme ─────────────
+  # ── Ensure the icons directories exist for the generated theme ───────────
+  # ~/.local/share/icons – XDG path (modern GTK, compositor, libxcursor ≥ 0.9)
+  # ~/.icons             – legacy path (Chromium/Electron/VSCode, older X11 apps)
   home.activation.xcursor = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     $DRY_RUN_CMD mkdir -p "$HOME/.local/share/icons"
+    $DRY_RUN_CMD mkdir -p "$HOME/.icons"
   '';
 }

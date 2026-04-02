@@ -144,11 +144,20 @@
           mkdir -p "$(dirname "$state_file")"
           echo "$theme_name" > "$state_file"
 
-          # Keep a stable "palette-cursor" symlink so that XCURSOR_THEME (set once
-          # at session start by home.sessionVariables) and any X11/XWayland client
-          # that reads it by name still resolves to the freshly generated cursors.
+          # Keep a stable "palette-cursor" symlink in BOTH standard search paths:
+          #
+          # 1. ~/.local/share/icons/  – XDG-compliant path, used by modern GTK,
+          #    libxcursor >= 0.9.0, and compositor lookup (hyprctl setcursor).
+          #
+          # 2. ~/.icons/              – traditional legacy path checked by
+          #    libxcursor, Chromium/Electron (VSCode), and many older X11 apps
+          #    that do NOT follow XDG.  Without this symlink VSCode cannot find
+          #    the theme regardless of XCURSOR_THEME being set correctly.
           local icons_dir="$HOME/.local/share/icons"
           ln -sfn "$icons_dir/$theme_name" "$icons_dir/palette-cursor"
+
+          mkdir -p "$HOME/.icons"
+          ln -sfn "$icons_dir/$theme_name" "$HOME/.icons/palette-cursor"
 
           # Remove all previous palette-cursor-* theme directories to avoid accumulation.
           for old_dir in "$icons_dir/palette-cursor-"*/; do
