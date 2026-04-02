@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- NE–SW diagonal resize cursor (↗↙) – hotspot at (16, 16) centre -->
+  <!-- Diagonal shaft -->
+  <line x1="21" y1="11" x2="11" y2="21"
+        stroke="@@FG@@" stroke-width="2" stroke-linecap="round"/>
+  <!-- NE arrowhead (points top-right) -->
+  <polygon points="25,7 23,15 17,9"
+           fill="@@FG@@" stroke="@@BG@@" stroke-width="1" stroke-linejoin="round"/>
+  <!-- SW arrowhead (points bottom-left) -->
+  <polygon points="7,25 9,17 15,23"
+           fill="@@FG@@" stroke="@@BG@@" stroke-width="1" stroke-linejoin="round"/>
+</svg>
