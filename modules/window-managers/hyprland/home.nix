@@ -36,6 +36,14 @@ in
           "vfr" = "true";
         };
 
+        # Propagate cursor theme to every process Hyprland spawns, including
+        # XWayland clients such as VSCode.  Without these, XWayland apps can't
+        # find the generated theme and fall back to the system default.
+        env = lib.optionals config.modules.themes.xcursor.enable [
+          "XCURSOR_THEME,palette-cursor"
+          "XCURSOR_SIZE,${toString config.modules.themes.xcursor.size}"
+        ];
+
         monitor = [
           ", 1920x1200, auto, 1"
         ];
