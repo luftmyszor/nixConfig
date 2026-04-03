@@ -14,8 +14,10 @@ in
   imports =
     moduleLib.loadSystemModules
     ++ moduleLib.loadOptions
-    ++ [
+    ++ lib.optionals (builtins.pathExists ./hardware-configuration.nix) [
       ./hardware-configuration.nix
+    ]
+    ++ lib.optionals (builtins.pathExists ./systemNixFiles/filesystem.nix) [
       ./systemNixFiles/filesystem.nix
     ];
 
