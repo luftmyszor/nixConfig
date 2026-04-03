@@ -1,15 +1,139 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="32"
+   height="32"
+   viewBox="0 0 32 32"
+   version="1.1"
+   id="svg5"
+   sodipodi:docname="crosshair.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs5">
+    <inkscape:path-effect
+       effect="copy_rotate"
+       starting_point="0,0"
+       origin="16,15.25"
+       id="path-effect1"
+       is_visible="true"
+       lpeversion="1.2"
+       lpesatellites=""
+       method="normal"
+       num_copies="6"
+       starting_angle="0"
+       rotation_angle="60"
+       gap="0.42"
+       copies_to_360="true"
+       mirror_copies="false"
+       split_items="false"
+       link_styles="false" />
+    <linearGradient
+       id="linearGradient8"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:@@PRIMARY@@;stop-opacity:1;"
+         offset="0.63520384"
+         id="stop8" />
+      <stop
+         style="stop-color:@@SECONDARY@@;stop-opacity:1;"
+         offset="0.80332893"
+         id="stop9" />
+    </linearGradient>
+    <inkscape:path-effect
+       effect="mirror_symmetry"
+       start_point="0,16"
+       end_point="32,16"
+       center_point="16,16"
+       id="path-effect8"
+       is_visible="false"
+       lpeversion="1.2"
+       lpesatellites=""
+       mode="horizontal"
+       discard_orig_path="false"
+       fuse_paths="true"
+       oposite_fuse="true"
+       split_items="false"
+       split_open="false"
+       link_styles="false" />
+    <inkscape:path-effect
+       effect="mirror_symmetry"
+       start_point="16,0"
+       end_point="16,32"
+       center_point="16,16"
+       id="path-effect7"
+       is_visible="true"
+       lpeversion="1.2"
+       lpesatellites=""
+       mode="vertical"
+       discard_orig_path="false"
+       fuse_paths="true"
+       oposite_fuse="false"
+       split_items="false"
+       split_open="false"
+       link_styles="false" />
+    <inkscape:path-effect
+       effect="mirror_symmetry"
+       start_point="0,0"
+       end_point="32,32"
+       center_point="16,16"
+       id="path-effect6"
+       is_visible="true"
+       lpeversion="1.2"
+       lpesatellites=""
+       mode="free"
+       discard_orig_path="false"
+       fuse_paths="true"
+       oposite_fuse="true"
+       split_items="false"
+       split_open="false"
+       link_styles="false" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient8"
+       id="radialGradient9"
+       cx="16"
+       cy="16"
+       fx="16"
+       fy="16"
+       r="14.21161"
+       gradientTransform="matrix(1,0,0,1.0000382,0,-6.1103405e-4)"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="namedview5"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="18.961875"
+     inkscape:cx="12.736083"
+     inkscape:cy="17.640661"
+     inkscape:window-width="1424"
+     inkscape:window-height="1168"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg5" />
   <!-- Crosshair cursor – hotspot at (16, 16) centre -->
   <!-- Left segment -->
-  <rect x="2" y="15" width="10" height="2" fill="@@FG@@"/>
   <!-- Right segment -->
-  <rect x="20" y="15" width="10" height="2" fill="@@FG@@"/>
   <!-- Top segment -->
-  <rect x="15" y="2" width="2" height="10" fill="@@FG@@"/>
   <!-- Bottom segment -->
-  <rect x="15" y="20" width="2" height="10" fill="@@FG@@"/>
   <!-- Centre circle (primary accent) -->
-  <circle cx="16" cy="16" r="3.5" fill="none"
-          stroke="@@PRIMARY@@" stroke-width="1.5"/>
-  <circle cx="16" cy="16" r="1" fill="@@PRIMARY@@"/>
+  <path
+     id="path5"
+     style="fill:url(#radialGradient9);stroke-width:1.748"
+     d="M 10.421628,5.9169003 5.4682785,3.2136558 14.893834,13.360339 10.828168,0.41516305 Z M 5.1281128,15.414462 0.3103594,18.352566 13.810423,15.263137 0.56673834,12.311519 Z m 5.5783712,9.333099 0.135597,5.641349 4.074508,-13.236112 -9.1780187,9.993558 z m 10.871888,-0.164461 4.953349,2.703244 -9.425555,-10.146683 4.065666,12.945176 z m 5.293515,-9.497562 4.817754,-2.938104 -13.500064,3.089429 13.243685,2.951618 z M 21.293516,5.7524386 21.157919,0.11108954 17.083411,13.347202 26.26143,3.3536436 Z"
+     sodipodi:nodetypes="ccccc"
+     inkscape:label="Base"
+     inkscape:path-effect="#path-effect1"
+     inkscape:original-d="M 10.421628,5.9169003 5.4682785,3.2136558 14.893834,13.360339 10.828168,0.41516305 Z"
+     transform="translate(0,0.75)" />
 </svg>

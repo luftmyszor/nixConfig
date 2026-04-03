@@ -1,15 +1,23 @@
 {
   "default": [
-    4,
-    4
+    1,
+    1
   ],
   "pointer": [
     11,
     2
   ],
+  "open-hand": [
+    11,
+    2
+  ],
+  "closed-hand": [
+    14,
+    5
+  ],
   "text": [
-    16,
-    16
+    14,
+    15
   ],
   "crosshair": [
     16,
@@ -39,7 +47,15 @@
     16,
     16
   ],
-  "move": [
+  "resize-col": [
+    16,
+    16
+  ],
+  "resize-row": [
+    16,
+    16
+  ],
+  "move-arr": [
     16,
     16
   ]

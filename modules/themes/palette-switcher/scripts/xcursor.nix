@@ -113,15 +113,24 @@
               scaled_xhot=$(( xhot * size / 32 ))
               scaled_yhot=$(( yhot * size / 32 ))
               local tmp_png="$tmp_dir/''${cursor_name}_''${size}.png"
-              rsvg-convert -w "$size" -h "$size" "$tmp_svg" -o "$tmp_png"
-              # xcursorgen config line: <size> <xhot> <yhot> <filename> <frame-delay-ms>
-              # Frame delay (50 ms) is required for animated cursors; for static cursors
-              # (single frame) the field is mandatory but the value is ignored.
-              echo "$size $scaled_xhot $scaled_yhot ''${cursor_name}_''${size}.png 50" >> "$cfg_file"
+              if rsvg-convert -w "$size" -h "$size" "$tmp_svg" -o "$tmp_png"; then
+                # xcursorgen config line: <size> <xhot> <yhot> <filename> <frame-delay-ms>
+                # Frame delay (50 ms) is required for animated cursors; for static cursors
+                # (single frame) the field is mandatory but the value is ignored.
+                echo "$size $scaled_xhot $scaled_yhot ''${cursor_name}_''${size}.png 50" >> "$cfg_file"
+              else
+                log_err "XCursor: rsvg-convert failed for $cursor_name at ''${size}px -- skipping size"
+              fi
             done
 
             # Assemble all sizes into a single binary XCursor file
-            (cd "$tmp_dir" && xcursorgen "$cfg_file" "$cursors_dir/$cursor_name")
+            if [[ -s "$cfg_file" ]]; then
+              if ! (cd "$tmp_dir" && xcursorgen "$cfg_file" "$cursors_dir/$cursor_name"); then
+                log_err "XCursor: xcursorgen failed for $cursor_name"
+              fi
+            else
+              log_err "XCursor: no PNG frames generated for $cursor_name -- skipping cursor"
+            fi
           done
 
           # ── Install cursor name aliases ─────────────────────────────────────────
@@ -144,11 +153,20 @@
           mkdir -p "$(dirname "$state_file")"
           echo "$theme_name" > "$state_file"
 
-          # Keep a stable "palette-cursor" symlink so that XCURSOR_THEME (set once
-          # at session start by home.sessionVariables) and any X11/XWayland client
-          # that reads it by name still resolves to the freshly generated cursors.
+          # Keep a stable "palette-cursor" symlink in BOTH standard search paths:
+          #
+          # 1. ~/.local/share/icons/  – XDG-compliant path, used by modern GTK,
+          #    libxcursor >= 0.9.0, and compositor lookup (hyprctl setcursor).
+          #
+          # 2. ~/.icons/              – traditional legacy path checked by
+          #    libxcursor, Chromium/Electron (VSCode), and many older X11 apps
+          #    that do NOT follow XDG.  Without this symlink VSCode cannot find
+          #    the theme regardless of XCURSOR_THEME being set correctly.
           local icons_dir="$HOME/.local/share/icons"
           ln -sfn "$icons_dir/$theme_name" "$icons_dir/palette-cursor"
+
+          mkdir -p "$HOME/.icons"
+          ln -sfn "$icons_dir/$theme_name" "$HOME/.icons/palette-cursor"
 
           # Remove all previous palette-cursor-* theme directories to avoid accumulation.
           for old_dir in "$icons_dir/palette-cursor-"*/; do

@@ -64,6 +64,17 @@
       fi
     }
 
+    reload_vscode() {
+      # VSCode watches settings.json via inotify and hot-reloads colour
+      # customisations automatically – no signal or restart is required as
+      # long as render_vscode writes the file in-place (preserving its inode).
+      if pgrep -x code > /dev/null 2>&1 || pgrep -x code-fhs > /dev/null 2>&1; then
+        log "VSCode is running – colours applied via settings.json file watch"
+      else
+        log "VSCode not running – colours will apply on next launch"
+      fi
+    }
+
     reload_wallpaper() {
       local out="$HOME/.local/share/wallpaper.png"
       [[ -f "$out" ]] || return 0
@@ -88,6 +99,7 @@
     reload_waybar    || true
     reload_hyprland  || true
     reload_neovim    || true
+    reload_vscode    || true
     reload_wallpaper || true
   '';
 }
