@@ -119,7 +119,7 @@
                 # (single frame) the field is mandatory but the value is ignored.
                 echo "$size $scaled_xhot $scaled_yhot ''${cursor_name}_''${size}.png 50" >> "$cfg_file"
               else
-                log_err "XCursor: rsvg-convert failed for $cursor_name at ''${size}px – skipping size"
+                log_err "XCursor: rsvg-convert failed for $cursor_name at ''${size}px -- skipping size"
               fi
             done
 
@@ -129,7 +129,7 @@
                 log_err "XCursor: xcursorgen failed for $cursor_name"
               fi
             else
-              log_err "XCursor: no PNG frames generated for $cursor_name – skipping cursor"
+              log_err "XCursor: no PNG frames generated for $cursor_name -- skipping cursor"
             fi
           done
 
