@@ -14,17 +14,19 @@ hand=pointer
 hand1=pointer
 hand2=pointer
 pointing_hand=pointer
-openhand=hand-open
-closedhand=pointer
-grab=hand-open
-grabbing=pointer
-zoom-in=pointer
-zoom-out=pointer
+openhand=open-hand
+closedhand=closed-hand
+grab=open-hand
+grabbing=closed-hand
 cell=pointer
 context-menu=pointer
 help=pointer
-alias=open-hand
+alias=pointer
 copy=pointer
+
+# Zoom
+zoom-in=default
+zoom-out=default
 
 # Text / I-beam
 ibeam=text
@@ -48,19 +50,19 @@ crossed_circle=not-allowed
 forbidden=not-allowed
 
 # Resize / move cursors
-move=move
-all-scroll=move
-fleur=move
-size_all=move
+move=move-arr
+all-scroll=move-arr
+fleur=move-arr
+size_all=move-arr
 e-resize=resize-h
 w-resize=resize-h
 ew-resize=resize-h
-col-resize=resize-h
+col-resize=resize-col
 sb_h_double_arrow=resize-h
 n-resize=resize-v
 s-resize=resize-v
 ns-resize=resize-v
-row-resize=resize-v
+row-resize=resize-row
 sb_v_double_arrow=resize-v
 nw-resize=resize-nw-se
 se-resize=resize-nw-se
