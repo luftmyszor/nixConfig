@@ -20,6 +20,7 @@
     in
     {
       nixosConfigurations.luftmyszor = nixpkgs.lib.nixosSystem {
+        inherit system;
         specialArgs = {
           inherit inputs;
           inherit palette;
