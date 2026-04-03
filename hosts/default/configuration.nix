@@ -21,6 +21,19 @@ in
     ]
     ++ lib.optionals (builtins.pathExists ./systemNixFiles/filesystem.nix) [
       ./systemNixFiles/filesystem.nix
+    ]
+    # When neither machine-specific file is present (e.g. CI / fresh clone),
+    # provide a minimal stub so the NixOS fileSystems assertion is satisfied.
+    ++ lib.optionals (
+      !(builtins.pathExists ./hardware-configuration.nix)
+      && !(builtins.pathExists ./systemNixFiles/filesystem.nix)
+    ) [
+      {
+        fileSystems."/" = {
+          device = "nodev";
+          fsType = "tmpfs";
+        };
+      }
     ];
 
   # Bootloader.
