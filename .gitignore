@@ -1,0 +1,12 @@
+# Host-specific / machine-generated
+hosts/**/hardware-configuration.nix
+hosts/**/local.nix
+
+# Nix build outputs (root)
+ /result
+ /result-*
+
+# direnv
+/.direnv/
+.env
+.env.*
