@@ -113,15 +113,24 @@
               scaled_xhot=$(( xhot * size / 32 ))
               scaled_yhot=$(( yhot * size / 32 ))
               local tmp_png="$tmp_dir/''${cursor_name}_''${size}.png"
-              rsvg-convert -w "$size" -h "$size" "$tmp_svg" -o "$tmp_png"
-              # xcursorgen config line: <size> <xhot> <yhot> <filename> <frame-delay-ms>
-              # Frame delay (50 ms) is required for animated cursors; for static cursors
-              # (single frame) the field is mandatory but the value is ignored.
-              echo "$size $scaled_xhot $scaled_yhot ''${cursor_name}_''${size}.png 50" >> "$cfg_file"
+              if rsvg-convert -w "$size" -h "$size" "$tmp_svg" -o "$tmp_png"; then
+                # xcursorgen config line: <size> <xhot> <yhot> <filename> <frame-delay-ms>
+                # Frame delay (50 ms) is required for animated cursors; for static cursors
+                # (single frame) the field is mandatory but the value is ignored.
+                echo "$size $scaled_xhot $scaled_yhot ''${cursor_name}_''${size}.png 50" >> "$cfg_file"
+              else
+                log_err "XCursor: rsvg-convert failed for $cursor_name at ''${size}px – skipping size"
+              fi
             done
 
             # Assemble all sizes into a single binary XCursor file
-            (cd "$tmp_dir" && xcursorgen "$cfg_file" "$cursors_dir/$cursor_name")
+            if [[ -s "$cfg_file" ]]; then
+              if ! (cd "$tmp_dir" && xcursorgen "$cfg_file" "$cursors_dir/$cursor_name"); then
+                log_err "XCursor: xcursorgen failed for $cursor_name"
+              fi
+            else
+              log_err "XCursor: no PNG frames generated for $cursor_name – skipping cursor"
+            fi
           done
 
           # ── Install cursor name aliases ─────────────────────────────────────────
