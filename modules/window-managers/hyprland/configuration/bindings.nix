@@ -1,8 +1,13 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
   cfg = config.modules.window-managers.hyprland;
-in 
-  lib.mkIf cfg.enable {
+in
+lib.mkIf cfg.enable {
   wayland.windowManager.hyprland.settings = {
     bind = lib.concatLists [
       [
@@ -12,23 +17,29 @@ in
         "$mod, W, exec, hyprctl dispatch killactive"
         "$mod, Tab, cyclenext,"
         "$mod, Tab, bringactivetotop,"
-     ]   
-     (builtins.concatLists (builtins.genList (i:
-       let ws = i + 1;
-       in [
-         "   $mod, code:1${toString i}, workspace, ${toString ws}"
-         "$mod SHIFT, code:1${toString i}, movetoworkspace, ${toString ws}"
-       ]
-     ) 9))
-     (if config.modules.services.wofi.enable then
-       [ "$mod, R, exec, wofi --show drun -c ~/.config/wofi/config -s ~/.config/wofi/style.css" ]
-     else
-        []
+        "$mod_SHIFT, S, exec, grim -g \"$(slurp)\" - | wl-copy"
+      ]
+      (builtins.concatLists (
+        builtins.genList (
+          i:
+          let
+            ws = i + 1;
+          in
+          [
+            "   $mod, code:1${toString i}, workspace, ${toString ws}"
+            "$mod SHIFT, code:1${toString i}, movetoworkspace, ${toString ws}"
+          ]
+        ) 9
+      ))
+      (
+        if config.modules.services.wofi.enable then
+          [ "$mod, R, exec, wofi --show drun -c ~/.config/wofi/config -s ~/.config/wofi/style.css" ]
+        else
+          [ ]
       )
     ];
 
-
-    binds = { 
+    binds = {
       drag_threshold = "10";
     };
     bindm = [
@@ -37,7 +48,7 @@ in
       "$mod, ALT_L, resizeWindow"
       "$mod, mouse:273, resizeWindow"
     ];
-    bindc= [
+    bindc = [
       "$mod, mouse:272, togglefloating"
     ];
     bindel = [
