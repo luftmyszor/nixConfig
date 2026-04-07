@@ -25,6 +25,7 @@ A modular NixOS configuration flake for the `luftmyszor` host. The setup uses **
 - [Host Configuration](#host-configuration)
 - [Adding a New Module](#adding-a-new-module)
 - [Applying the Configuration](#applying-the-configuration)
+- [Bootstrapping a New Machine](#bootstrapping-a-new-machine)
 
 ---
 
@@ -43,7 +44,6 @@ nixConfig/
 │       ├── configuration.nix  # System-level NixOS options & module toggles
 │       ├── home.nix           # Home Manager options & module toggles
 │       ├── enabledModules.nix # (reserved for future host-specific overrides)
-│       ├── hardware-configuration.nix
 │       └── systemNixFiles/
 │           └── filesystem.nix # Bind-mount /etc/nixos → ~/nixos-flake
 │
@@ -84,7 +84,12 @@ nixConfig/
     ├── home-template.nix
     ├── options-template.nix
     └── system-template.nix
+
+docs/
+└── BOOTSTRAPPING.md           # New-machine setup & /boot ESP troubleshooting guide
 ```
+
+> `hosts/default/hardware-configuration.nix` is **gitignored** — it is machine-specific and must be generated locally. See [Bootstrapping a New Machine](#bootstrapping-a-new-machine).
 
 ---
 
@@ -99,7 +104,7 @@ nixConfig/
 
 | Output | Description |
 |---|---|
-| `nixosConfigurations.luftmyszor` | Full system config for the `luftmyszor` host |
+| `nixosConfigurations.nixmyszor` | Full system config for the `nixmyszor` host |
 | `devShells.x86_64-linux.nix` | Nix tooling shell (`nixpkgs-fmt`, `statix`, `nil`, …) |
 | `devShells.x86_64-linux.python` | Python 3.12 shell (`pip`, `numpy`, `requests`, `pillow`) |
 | `devShells.x86_64-linux.cpp` | C/C++ shell (`gcc`, `clang`, `cmake`, `gdb`, …) |
@@ -430,8 +435,8 @@ Every shell uses the shared `shell-hook.nix` which:
 
 The `nix` shell additionally defines two aliases:
 ```bash
-nixSwitch  # sudo nixos-rebuild switch --flake /etc/nixos#luftmyszor
-nixTest    # sudo nixos-rebuild test   --flake /etc/nixos#luftmyszor
+nixSwitch  # sudo nixos-rebuild switch --flake /etc/nixos#nixmyszor
+nixTest    # sudo nixos-rebuild test   --flake /etc/nixos#nixmyszor
 ```
 
 Shell-specific scripts can be placed in `dev-shells/scripts/<shell-name>/` and are automatically added to `PATH` when the shell is entered.
@@ -492,13 +497,26 @@ After generation:
 
 ```bash
 # Switch (persistent — survives reboot)
-sudo nixos-rebuild switch --flake /etc/nixos#luftmyszor
+sudo nixos-rebuild switch --flake /etc/nixos#nixmyszor
 
 # Test (active until next reboot)
-sudo nixos-rebuild test --flake /etc/nixos#luftmyszor
+sudo nixos-rebuild test --flake /etc/nixos#nixmyszor
 
 # Build only (no activation)
-sudo nixos-rebuild build --flake /etc/nixos#luftmyszor
+sudo nixos-rebuild build --flake /etc/nixos#nixmyszor
 ```
 
 Inside the `nix` dev shell the first two are aliased to `nixSwitch` and `nixTest`.
+
+---
+
+## Bootstrapping a New Machine
+
+When cloning this repo on a new machine you need to supply a machine-specific `hardware-configuration.nix` (gitignored) and ensure `/boot` is properly configured as a VFAT EFI System Partition.
+
+See **[docs/BOOTSTRAPPING.md](docs/BOOTSTRAPPING.md)** for the complete step-by-step guide, including:
+
+- How to generate and place `hardware-configuration.nix`
+- How to set `fsType = "vfat"` for `/boot` to avoid systemd-boot failures
+- What to do if the system is already stuck with an `autofs` `/boot` mount
+- A troubleshooting table for the most common errors
