@@ -19,7 +19,7 @@
       shell = name: import ./dev-shells/${name}.nix { inherit pkgs; };
     in
     {
-      nixosConfigurations.luftmyszor = nixpkgs.lib.nixosSystem {
+      nixosConfigurations.nixmyszor = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = {
           inherit inputs;
