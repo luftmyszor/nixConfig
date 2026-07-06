@@ -1,6 +1,7 @@
 // Sidebar.qml
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
 
@@ -17,6 +18,8 @@ PanelWindow {
     anchors { left: true; top: true; bottom: true }
     implicitWidth: 60
     color: theme.programBg || "#16161e"
+    WlrLayershell.layer: WlrLayer.Top
+    WlrLayershell.exclusionMode: ExclusionMode.Normal
 
     ColumnLayout {
         anchors.fill: parent; anchors.margins: 10; spacing: 15
