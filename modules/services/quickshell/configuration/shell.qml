@@ -1,5 +1,6 @@
 // shell.qml
 import Quickshell
+import Quickshell.Io
 import QtQuick
 import "."
 
@@ -8,6 +9,8 @@ ShellRoot {
     id: root
 
     property bool searchOpen: false
+    property string pendingShellCommand: ""
+    property string pendingDesktopId: ""
     property var theme: ({
         "bg": "#1a1b26", "fg": "#c0caf5", "primary": "#7aa2f7", "danger": "#f7768e", "programBg": "#16161e"
     })
@@ -22,6 +25,21 @@ ShellRoot {
     }
 
     Component.onCompleted: loadColors()
+
+    Process {
+        id: runShellProcess
+        command: ["sh", "-lc", root.pendingShellCommand]
+    }
+
+    Process {
+        id: launchDesktopProcess
+        command: ["gtk-launch", root.pendingDesktopId]
+    }
+
+    Process {
+        id: openLauncherProcess
+        command: ["wofi", "--show", "drun"]
+    }
 
     // ==========================================
     // 1. INVISIBLE HOVER TRIPWIRE
@@ -52,9 +70,31 @@ ShellRoot {
     Searchbar {
         theme: root.theme
         searchOpen: root.searchOpen
-        
-        // Listen for the signal we created in SearchPopup.qml!
-        onCloseRequested: {
+
+        onCloseRequested: root.searchOpen = false
+
+        onExecuteCommandRequested: function (command) {
+            if (!command || command.trim().length === 0) {
+                root.searchOpen = false
+                return
+            }
+            root.pendingShellCommand = command
+            runShellProcess.running = true
+            root.searchOpen = false
+        }
+
+        onLaunchDesktopRequested: function (desktopId) {
+            if (!desktopId || desktopId.trim().length === 0) {
+                root.searchOpen = false
+                return
+            }
+            root.pendingDesktopId = desktopId
+            launchDesktopProcess.running = true
+            root.searchOpen = false
+        }
+
+        onOpenLauncherRequested: function (query) {
+            openLauncherProcess.running = true
             root.searchOpen = false
         }
     }
