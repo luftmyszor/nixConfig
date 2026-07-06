@@ -11,13 +11,14 @@ PanelWindow {
     property var theme
     property bool searchOpen
     property int overlayPadding: 10
+    property int frameRadius: 14
     property var appEntries: []
     property var filteredEntries: []
     property bool commandMode: searchInput.text.length > 0 && searchInput.text.charAt(0) === ">"
     property string commandText: commandMode ? searchInput.text.slice(1).trim() : ""
     property string queryText: commandMode ? "" : searchInput.text.trim().toLowerCase()
     property real maxOverlayHeight: (searchWindow.screen && searchWindow.screen.height > 0) ? searchWindow.screen.height * 0.4 : 432
-    property real rawImplicitHeight: contentColumn.implicitHeight + overlayPadding * 2
+    property real rawImplicitHeight: contentFrame.implicitHeight
 
     signal closeRequested()
     signal executeCommandRequested(string command)
@@ -100,11 +101,11 @@ PanelWindow {
     anchors {
         bottom: true
     }
-    margins { bottom: 20 }
+    margins { bottom: 0 }
     visible: searchOpen
     implicitHeight: Math.min(rawImplicitHeight, maxOverlayHeight)
     implicitWidth: 600
-    color: theme.bg || "#1a1b26"
+    color: "transparent"
 
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.exclusionMode: ExclusionMode.Ignore
@@ -136,142 +137,149 @@ PanelWindow {
         onActivated: searchWindow.closeRequested()
     }
 
-    ColumnLayout {
-        id: contentColumn
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-            margins: overlayPadding
-        }
-        spacing: 10
+    Rectangle {
+        id: contentFrame
+        anchors.fill: parent
+        color: theme.bg || "#1a1b26"
+        radius: frameRadius
+        border.width: 2
+        border.color: theme.primary || "#7aa2f7"
+        clip: true
+        implicitHeight: contentColumn.implicitHeight + overlayPadding * 2
 
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 45
-            color: theme.programBg || "#16161e"
-            border.width: 2
-            border.color: searchInput.focus ? theme.primary : "transparent"
+        ColumnLayout {
+            id: contentColumn
+            anchors.fill: parent
+            anchors.margins: overlayPadding
+            spacing: 10
 
-            TextInput {
-                id: searchInput
-                anchors.fill: parent
-                anchors.margins: 12
-                focus: true
-                verticalAlignment: TextInput.AlignVCenter
-                color: theme.fg
-                font.pixelSize: 16
-                selectByMouse: true
-
-                onActiveFocusChanged: {
-                    if (!activeFocus && searchWindow.visible) {
-                        closeOnBlurTimer.restart()
-                    }
-                }
-
-                Keys.onPressed: function (event) {
-                    if (event.key === Qt.Key_Escape) {
-                        searchWindow.closeRequested()
-                        event.accepted = true
-                    } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                        searchWindow.submitPrimaryAction()
-                        event.accepted = true
-                    }
-                }
-
-                Text {
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: "Search apps, files, or commands..."
-                    color: theme.danger || "#f7768e"
-                    visible: !searchInput.text && !searchInput.focus
-                }
-            }
-        }
-
-        Rectangle {
-            id: resultsContainer
-            Layout.fillWidth: true
-            Layout.preferredHeight: implicitHeight
-            implicitHeight: visible ? Math.min(resultsFlick.contentHeight + 8, Math.max(maxOverlayHeight - 75, 0)) : 0
-            visible: searchInput.text.trim().length > 0
-            color: "transparent"
-            clip: true
-
-            Behavior on implicitHeight {
-                NumberAnimation {
-                    duration: 160
-                    easing.type: Easing.OutCubic
-                }
-            }
-
-            Flickable {
-                id: resultsFlick
-                anchors.fill: parent
-                contentWidth: width
-                contentHeight: resultsColumn.implicitHeight
-                boundsBehavior: Flickable.StopAtBounds
+            Rectangle {
+                id: resultsContainer
+                Layout.fillWidth: true
+                Layout.preferredHeight: implicitHeight
+                implicitHeight: visible ? Math.min(resultsFlick.contentHeight + 8, Math.max(maxOverlayHeight - 75, 0)) : 0
+                visible: searchInput.text.trim().length > 0
+                color: "transparent"
                 clip: true
 
-                Column {
-                    id: resultsColumn
-                    width: resultsFlick.width
-                    spacing: 4
+                Behavior on implicitHeight {
+                    NumberAnimation {
+                        duration: 160
+                        easing.type: Easing.OutCubic
+                    }
+                }
 
-                    Repeater {
-                        model: commandMode ? 1 : filteredEntries.length
+                Flickable {
+                    id: resultsFlick
+                    anchors.fill: parent
+                    contentWidth: width
+                    contentHeight: resultsColumn.implicitHeight
+                    boundsBehavior: Flickable.StopAtBounds
+                    clip: true
 
-                        delegate: Rectangle {
-                            required property int index
-                            readonly property var entry: commandMode ? {
-                                "title": "Run command",
-                                "subtitle": commandText.length ? commandText : "(empty command)"
-                            } : filteredEntries[index]
-                            width: resultsColumn.width
-                            implicitHeight: 48
-                            radius: 6
-                            color: listMouse.containsMouse ? (theme.programBg || "#16161e") : "transparent"
-                            border.width: listMouse.containsMouse ? 1 : 0
-                            border.color: theme.primary || "#7aa2f7"
+                    Column {
+                        id: resultsColumn
+                        width: resultsFlick.width
+                        spacing: 4
 
-                            Column {
-                                anchors.fill: parent
-                                anchors.margins: 8
-                                spacing: 2
+                        Repeater {
+                            model: commandMode ? 1 : filteredEntries.length
 
-                                Text {
-                                    text: entry.title
-                                    color: theme.fg || "#c0caf5"
-                                    font.pixelSize: 14
-                                    elide: Text.ElideRight
-                                    width: parent.width
-                                }
+                            delegate: Rectangle {
+                                required property int index
+                                readonly property var entry: commandMode ? {
+                                    "title": "Run command",
+                                    "subtitle": commandText.length ? commandText : "(empty command)"
+                                } : filteredEntries[index]
+                                width: resultsColumn.width
+                                implicitHeight: 48
+                                radius: 6
+                                color: listMouse.containsMouse ? (theme.programBg || "#16161e") : "transparent"
+                                border.width: listMouse.containsMouse ? 1 : 0
+                                border.color: theme.primary || "#7aa2f7"
 
-                                Text {
-                                    text: commandMode ? "Press Enter to execute in shell" : entry.subtitle
-                                    color: theme.primary || "#7aa2f7"
-                                    font.pixelSize: 11
-                                    elide: Text.ElideRight
-                                    width: parent.width
-                                }
-                            }
+                                Column {
+                                    anchors.fill: parent
+                                    anchors.margins: 8
+                                    spacing: 2
 
-                            MouseArea {
-                                id: listMouse
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                onClicked: {
-                                    if (commandMode) {
-                                        if (commandText.length > 0) {
-                                            executeCommandRequested(commandText)
-                                        }
-                                    } else if (entry && entry.desktopId) {
-                                        launchDesktopRequested(entry.desktopId)
+                                    Text {
+                                        text: entry.title
+                                        color: theme.fg || "#c0caf5"
+                                        font.pixelSize: 14
+                                        elide: Text.ElideRight
+                                        width: parent.width
                                     }
-                                    closeRequested()
+
+                                    Text {
+                                        text: commandMode ? "Press Enter to execute in shell" : entry.subtitle
+                                        color: theme.primary || "#7aa2f7"
+                                        font.pixelSize: 11
+                                        elide: Text.ElideRight
+                                        width: parent.width
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: listMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: {
+                                        if (commandMode) {
+                                            if (commandText.length > 0) {
+                                                executeCommandRequested(commandText)
+                                            }
+                                        } else if (entry && entry.desktopId) {
+                                            launchDesktopRequested(entry.desktopId)
+                                        }
+                                        closeRequested()
+                                    }
                                 }
                             }
                         }
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 45
+                color: theme.programBg || "#16161e"
+                border.width: 2
+                border.color: searchInput.focus ? theme.primary : "transparent"
+
+                TextInput {
+                    id: searchInput
+                    anchors.fill: parent
+                    anchors.margins: 12
+                    focus: true
+                    verticalAlignment: TextInput.AlignVCenter
+                    color: theme.fg
+                    font.pixelSize: 16
+                    selectByMouse: true
+
+                    onActiveFocusChanged: {
+                        if (!activeFocus && searchWindow.visible) {
+                            closeOnBlurTimer.restart()
+                        }
+                    }
+
+                    Keys.onPressed: function (event) {
+                        if (event.key === Qt.Key_Escape) {
+                            searchWindow.closeRequested()
+                            event.accepted = true
+                        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                            searchWindow.submitPrimaryAction()
+                            event.accepted = true
+                        }
+                    }
+
+                    Text {
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "Search apps, files, or commands..."
+                        color: theme.danger || "#f7768e"
+                        visible: !searchInput.text && !searchInput.focus
                     }
                 }
             }
