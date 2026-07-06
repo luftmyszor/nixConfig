@@ -15,7 +15,7 @@ in
     moduleLib.loadSystemModules
     ++ moduleLib.loadOptions
     ++ [
-      ../../dev-shells/dev-script.nix
+      ../../scripts/dev-script.nix
     ]
     # These files are machine-specific and gitignored; skip them when absent
     # (e.g. fresh clone / CI) so the flake can still be evaluated without them.
