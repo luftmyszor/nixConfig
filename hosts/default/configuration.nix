@@ -50,7 +50,7 @@ in
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  networking.hostName = "nixmyszor"; # Define your hostname.
+  networking.hostName = "luftpad"; # Define your hostname.
 
   networking.networkmanager.enable = true;
 
