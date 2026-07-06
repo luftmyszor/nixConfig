@@ -103,7 +103,6 @@ PanelWindow {
     implicitHeight: Math.min(rawImplicitHeight, maxOverlayHeight)
     implicitWidth: 600
     color: theme.bg || "#1a1b26"
-    clip: true
 
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
