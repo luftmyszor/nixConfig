@@ -28,7 +28,7 @@ lib.mkIf cfg.enable {
       nixTest = "sudo nixos-rebuild test --flake /etc/nixos#$(hostname)";
     };
 
-    initExtra = ''
+    initContent = ''
       # If we are inside a Nix dev shell...
       if [ -n "$NIX_ACTIVE_SHELLS" ]; then
         

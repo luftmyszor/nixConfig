@@ -73,6 +73,7 @@ in
     LC_TIME = "pl_PL.UTF-8";
   };
 
+  nix.settings.warn-dirty = false;
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"
