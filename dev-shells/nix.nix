@@ -15,12 +15,11 @@ in
 pkgs.mkShell {
   packages = myPackages;
 
-
   shellHook = ''
-    ${import ./shell-hook.nix { inherit pkgs; shellName = "nix"; packages = myPackages; }}
-    alias nixSwitch="sudo nixos-rebuild switch --flake /etc/nixos#nixmyszor"
-    alias nixTest="sudo nixos-rebuild test --flake /etc/nixos#nixmyszor"
-
+    ${import ./shell-hook.nix {
+      inherit pkgs;
+      shellName = "nix";
+      packages = myPackages;
+    }}
   '';
 }
-
