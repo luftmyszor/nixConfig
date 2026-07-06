@@ -1,21 +1,26 @@
 { pkgs }:
 let
-  pythonPackages = pypkgs:[
+  pythonPackages = pypkgs: [
     pypkgs.pip
     pypkgs.numpy
     pypkgs.requests
     pypkgs.pillow
+    pypkgs.tkinter
   ];
 
-pythonEnv = pkgs.python312.withPackages pythonPackages;
-packageNames = builtins.map (p: p.pname or (builtins.parseDrvName p.name).name)
-    (pythonPackages pkgs.python312.pkgs);
+  pythonEnv = pkgs.python312.withPackages pythonPackages;
+  packageNames = builtins.map (p: p.pname or (builtins.parseDrvName p.name).name) (
+    pythonPackages pkgs.python312.pkgs
+  );
 
 in
 pkgs.mkShell {
-  packages = [ pythonEnv ];  
+  packages = [ pythonEnv ];
   shellHook = ''
-    ${import ./shell-hook.nix { inherit pkgs; shellName = "python"; packages = packageNames; }}
+    ${import ./shell-hook.nix {
+      inherit pkgs;
+      shellName = "python";
+      packages = packageNames;
+    }}
   '';
 }
-

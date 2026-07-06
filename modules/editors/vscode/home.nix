@@ -21,7 +21,8 @@ lib.mkIf cfg.enable {
         jnoortheen.nix-ide
 
         # C++ extensions
-        ms-vscode.cpptools
+        ms-vscode.cmake-tools
+        ms-vscode.cpptools-extension-pack
 
         # C# extensions
         ms-dotnettools.vscode-dotnet-runtime

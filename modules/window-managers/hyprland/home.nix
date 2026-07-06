@@ -56,7 +56,8 @@ in
           ];
 
         monitor = [
-          ", 1920x1200, auto, 1"
+          "eDP-1, 1920x1200, auto, 1"
+          ", preffered, auto, 1"
         ];
 
         workspace = [
