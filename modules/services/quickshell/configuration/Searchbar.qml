@@ -49,6 +49,9 @@ PanelWindow {
         var entries = [];
         var seen = {};
         collectDesktopEntries(systemDesktopModel, entries, seen);
+        collectDesktopEntries(systemProfileDesktopModel, entries, seen);
+        collectDesktopEntries(userProfileDesktopModel, entries, seen);
+        collectDesktopEntries(homeProfileDesktopModel, entries, seen);
         collectDesktopEntries(userDesktopModel, entries, seen);
         entries.sort(function (a, b) {
             return a.title.localeCompare(b.title);
@@ -104,6 +107,7 @@ PanelWindow {
     color: theme.bg || "#1a1b26"
 
     WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.exclusionMode: ExclusionMode.Ignore
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
     Behavior on implicitHeight {
@@ -294,8 +298,32 @@ PanelWindow {
     }
 
     FolderListModel {
+        id: systemProfileDesktopModel
+        folder: "file:///run/current-system/sw/share/applications"
+        nameFilters: ["*.desktop"]
+        showDirs: false
+        onCountChanged: searchWindow.rebuildAppEntries()
+    }
+
+    FolderListModel {
+        id: userProfileDesktopModel
+        folder: "file:///etc/profiles/per-user/" + Quickshell.env("USER") + "/share/applications"
+        nameFilters: ["*.desktop"]
+        showDirs: false
+        onCountChanged: searchWindow.rebuildAppEntries()
+    }
+
+    FolderListModel {
+        id: homeProfileDesktopModel
+        folder: "file://" + Quickshell.env("HOME") + "/.nix-profile/share/applications"
+        nameFilters: ["*.desktop"]
+        showDirs: false
+        onCountChanged: searchWindow.rebuildAppEntries()
+    }
+
+    FolderListModel {
         id: userDesktopModel
-        folder: "file:///home/" + Quickshell.env("USER") + "/.local/share/applications"
+        folder: "file://" + Quickshell.env("HOME") + "/.local/share/applications"
         nameFilters: ["*.desktop"]
         showDirs: false
         onCountChanged: searchWindow.rebuildAppEntries()

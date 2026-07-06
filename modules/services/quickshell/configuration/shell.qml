@@ -1,6 +1,7 @@
 // shell.qml
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import QtQuick
 import "."
 
@@ -47,6 +48,9 @@ ShellRoot {
     PanelWindow {
         anchors { bottom: true; left: true; right: true }
         implicitHeight: 5; color: "transparent"
+        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.exclusionMode: ExclusionMode.Ignore
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         MouseArea {
             anchors.fill: parent; hoverEnabled: true
             onEntered: root.searchOpen = true
