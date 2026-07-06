@@ -130,13 +130,28 @@ PanelWindow {
         onActivated: searchWindow.closeRequested()
     }
 
-    Rectangle {
+    Item {
         id: contentFrame
         anchors.fill: parent
-        color: theme.bg || "#1a1b26"
-        radius: frameRadius
-        clip: true
         implicitHeight: contentColumn.implicitHeight + overlayPadding * 2
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            height: frameRadius * 2
+            radius: frameRadius
+            color: theme.bg || "#1a1b26"
+        }
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.topMargin: frameRadius
+            anchors.bottom: parent.bottom
+            color: theme.bg || "#1a1b26"
+        }
 
         Rectangle {
             anchors.left: parent.left
@@ -160,14 +175,6 @@ PanelWindow {
             anchors.bottom: parent.bottom
             width: 2
             color: theme.primary || "#7aa2f7"
-        }
-
-        Rectangle {
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            height: frameRadius
-            color: theme.bg || "#1a1b26"
         }
 
         ColumnLayout {
