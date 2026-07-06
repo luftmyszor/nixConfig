@@ -96,7 +96,6 @@ PanelWindow {
 
     anchors {
         bottom: true
-        horizontalCenter: true
     }
     margins { bottom: 20 }
     visible: searchOpen
