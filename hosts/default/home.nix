@@ -26,7 +26,12 @@ let
 in
 {
   #_module.args.palette = palette;
-  imports = moduleLib.loadHomeModules ++ moduleLib.loadOptions;
+  imports =
+    moduleLib.loadHomeModules
+    ++ moduleLib.loadOptions
+    ++ [
+      ./settings.nix
+    ];
 
   home = {
     inherit username homeDirectory;
@@ -91,22 +96,6 @@ in
       fi
     done
   '';
-
-  modules.shells.zsh.enable = true;
-  modules.terminals.ghostty.enable = true;
-  modules.window-managers.hyprland.enable = true;
-
-  modules.themes.palette-switcher.enable = true;
-  modules.themes.xcursor.enable = true;
-
-  modules.services.quickshell.enable = true;
-  modules.services.waybar.enable = false;
-  modules.services.wofi.enable = true;
-  modules.services.swww.enable = true;
-
-  modules.editors.vscode.enable = true;
-
-  modules.browsers.zen.enable = true;
 
   home.file.".palette/palette.json".text = builtins.toJSON palette;
 }

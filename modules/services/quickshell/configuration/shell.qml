@@ -1,47 +1,61 @@
+// shell.qml
 import Quickshell
-import Quickshell.Io
 import QtQuick
+import "."
 
-PanelWindow {
-  anchors {
-    top: true
-    left: true
-    right: true
-  }
 
-  implicitHeight: 30
+ShellRoot {
+    id: root
 
-  Text {
-    id: clock
-    anchors.centerIn: parent
+    property bool searchOpen: false
+    property var theme: ({
+        "bg": "#1a1b26", "fg": "#c0caf5", "primary": "#7aa2f7", "danger": "#f7768e", "programBg": "#16161e"
+    })
 
-    Process {
-      // give the process object an id so we can talk
-      // about it from the timer
-      id: dateProc
-
-      command: ["date"]
-      running: true
-
-      stdout: StdioCollector {
-        onStreamFinished: clock.text = this.text
-      }
+    function loadColors() {
+        var xhr = new XMLHttpRequest();
+        var path = "file:///home/" + Quickshell.env("USER") + "/.config/palettes/active.json";
+        xhr.open("GET", path, false); xhr.send();
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.responseText !== "") {
+            root.theme = JSON.parse(xhr.responseText);
+        }
     }
 
-    // use a timer to rerun the process at an interval
-    Timer {
-      // 1000 milliseconds is 1 second
-      interval: 1000
+    Component.onCompleted: loadColors()
 
-      // start the timer immediately
-      running: true
-
-      // run the timer again when it ends
-      repeat: true
-
-      // when the timer is triggered, set the running property of the
-      // process to true, which reruns it if stopped.
-      onTriggered: dateProc.running = true
+    // ==========================================
+    // 1. INVISIBLE HOVER TRIPWIRE
+    // ==========================================
+    PanelWindow {
+        anchors { bottom: true; left: true; right: true }
+        implicitHeight: 5; color: "transparent"
+        MouseArea {
+            anchors.fill: parent; hoverEnabled: true
+            onEntered: root.searchOpen = true
+        }
     }
-  }
+
+    // ==========================================
+    // 2. OUR CUSTOM MODULES!
+    // ==========================================
+    
+    Sidebar {
+        theme: root.theme
+        searchOpen: root.searchOpen
+        
+        // Listen for the signal we created in Sidebar.qml!
+        onToggleSearchClicked: {
+            root.searchOpen = !root.searchOpen
+        }
+    }
+
+    Searchbar {
+        theme: root.theme
+        searchOpen: root.searchOpen
+        
+        // Listen for the signal we created in SearchPopup.qml!
+        onCloseRequested: {
+            root.searchOpen = false
+        }
+    }
 }

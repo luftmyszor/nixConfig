@@ -19,6 +19,7 @@ in
   # style.css is NOT managed by Nix – it is written at runtime by
   # `palette-switch` (render_wofi) so that theme switches take effect
   # immediately without rebuilding the system.
-  home.file.".config/wofi/config".text = lib.mkIf enabled wofiConfig;
+  home.file = lib.mkIf enabled {
+    ".config/wofi/config".text = wofiConfig;
+  };
 }
-

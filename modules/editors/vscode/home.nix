@@ -14,33 +14,37 @@ lib.mkIf cfg.enable {
     package = pkgs.vscode-fhs;
 
     profiles.default = {
-      extensions = with pkgs.vscode-extensions; [
-        formulahendry.code-runner
-        # Nix extensions
-        bbenoist.nix
-        jnoortheen.nix-ide
+      extensions =
+        with pkgs.vscode-extensions;
+        [
+          formulahendry.code-runner
+          # Nix extensions
+          bbenoist.nix
+          jnoortheen.nix-ide
 
-        # C++ extensions
-        ms-vscode.cmake-tools
-        ms-vscode.cpptools-extension-pack
+          # C++ extensions
+          ms-vscode.cmake-tools
+          ms-vscode.cpptools-extension-pack
 
-        # C# extensions
-        ms-dotnettools.vscode-dotnet-runtime
-        ms-dotnettools.csharp
-        ms-dotnettools.csdevkit
+          # C# extensions
+          ms-dotnettools.vscode-dotnet-runtime
+          ms-dotnettools.csharp
+          ms-dotnettools.csdevkit
 
-        # Qml extensions
+          # Qml extensions
 
-      ]
-      # ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
-      #   {
-      #     name = "Qt Qml";
-      #     publisher = "Qt Group";
-      #     version = "1.9.0";
-      #     sha256 = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa2";
-      #   }
-      # ]
-      ;
+        ]
+        ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
+          {
+            # This installs the bbenoist QML extension dynamically
+            name = "QML";
+            publisher = "bbenoist";
+            version = "1.0.0";
+            sha256 = "sha256-tphnVlD5LA6Au+WDrLZkAxnMJeTCd3UTyTN1Jelditk=";
+            # Note: If Nix complains about the hash on rebuild,
+            # just copy the correct hash it gives you in the error message!
+          }
+        ];
     };
   };
   home.packages = [ pkgs.nil ];
