@@ -111,13 +111,6 @@ PanelWindow {
     WlrLayershell.exclusionMode: ExclusionMode.Ignore
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
-    Behavior on implicitHeight {
-        NumberAnimation {
-            duration: 160
-            easing.type: Easing.OutCubic
-        }
-    }
-
     onVisibleChanged: {
         if (visible) {
             searchWindow.requestActivate()
@@ -142,10 +135,40 @@ PanelWindow {
         anchors.fill: parent
         color: theme.bg || "#1a1b26"
         radius: frameRadius
-        border.width: 2
-        border.color: theme.primary || "#7aa2f7"
         clip: true
         implicitHeight: contentColumn.implicitHeight + overlayPadding * 2
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            height: 2
+            color: theme.primary || "#7aa2f7"
+        }
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: 2
+            color: theme.primary || "#7aa2f7"
+        }
+
+        Rectangle {
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: 2
+            color: theme.primary || "#7aa2f7"
+        }
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            height: frameRadius
+            color: theme.bg || "#1a1b26"
+        }
 
         ColumnLayout {
             id: contentColumn

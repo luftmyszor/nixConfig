@@ -18,8 +18,8 @@ PanelWindow {
     anchors { left: true; top: true; bottom: true }
     implicitWidth: 60
     color: theme.programBg || "#16161e"
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.exclusionMode: ExclusionMode.Ignore
+    WlrLayershell.layer: WlrLayer.Top
+    WlrLayershell.exclusionMode: ExclusionMode.Normal
 
     ColumnLayout {
         anchors.fill: parent; anchors.margins: 10; spacing: 15
