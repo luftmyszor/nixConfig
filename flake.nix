@@ -43,6 +43,7 @@
         python = shell "python";
         cpp = shell "cpp";
         csharp = shell "csharp";
+        esp = shell "esp";
       };
     };
 }

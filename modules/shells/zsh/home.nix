@@ -26,6 +26,7 @@ lib.mkIf cfg.enable {
       # OS Rebuilds (automatically targeting the current machine)
       nixSwitch = "sudo nixos-rebuild switch --flake /etc/nixos#$(hostname)";
       nixTest = "sudo nixos-rebuild test --flake /etc/nixos#$(hostname)";
+      nixUpdate = "nix flake update";
     };
 
     initContent = ''

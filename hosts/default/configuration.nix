@@ -115,6 +115,7 @@ in
     extraGroups = [
       "networkmanager"
       "wheel"
+      "dialout"
     ];
     packages = with pkgs; [
 
@@ -151,5 +152,20 @@ in
   home-manager.useUserPackages = true;
 
   system.stateVersion = "25.05";
+
+  xdg.portal = {
+    enable = true;
+    # Use GTK portal as a fallback for file dialogs
+    extraPortals = with pkgs; [ xdg-desktop-portal-gtk ];
+
+    # Ensure the system knows to fall back to GTK
+    config = {
+      common = {
+        default = [ "gtk" ];
+        "org.freedesktop.impl.portal.Screencast" = [ "hyprland" ];
+        "org.freedesktop.impl.portal.Screenshot" = [ "hyprland" ];
+      };
+    };
+  };
 
 }

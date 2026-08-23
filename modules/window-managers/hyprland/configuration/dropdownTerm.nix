@@ -14,7 +14,7 @@ lib.mkIf cfg.enable {
       "special:dropdown, on-created-empty:$terminal"
       "s[true], gapsout:0 0 750 0, gapsin:0, border:false"
     ];
-    windowrulev2 = [
+    window_rule = [
       "float,onworkspace: special:dropdown"
       "pin,onworkspace: special:dropdown"
 

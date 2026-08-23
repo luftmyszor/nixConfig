@@ -12,9 +12,11 @@
   modules.services.wofi.enable = true;
 
   modules.editors.vscode.enable = true;
+  modules.editors.arduino.enable = true;
 
   modules.browsers.zen.enable = true;
 
   modules.themes.xcursor.enable = true;
   modules.themes.xcursor.size = 35;
+
 }
