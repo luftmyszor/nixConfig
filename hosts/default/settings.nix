@@ -12,6 +12,7 @@
   modules.services.wofi.enable = true;
 
   modules.editors.vscode.enable = true;
+  modules.editors.aseprite.enable = true;
 
   modules.browsers.zen.enable = true;
 }

@@ -149,6 +149,7 @@ modules.services.quickshell.enable     = true;
 modules.services.waybar.enable         = false; # disabled
 modules.services.swww.enable           = true;
 modules.services.wofi.enable           = true;
+modules.editors.aseprite.enable        = true;
 modules.editors.vscode.enable          = true;
 ```
 
@@ -212,6 +213,7 @@ Set this to any palette name (`tokyo-night`, `gruvbox`, `nord`, `everforest`, `c
 
 | Module | Option | Description |
 |---|---|---|
+| aseprite | `modules.editors.aseprite.enable` | Aseprite pixel art editor |
 | vscode | `modules.editors.vscode.enable` | VS Code (FHS build) with Nix, C++, and C# extensions; `nil` LSP included |
 
 ---
