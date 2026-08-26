@@ -1,4 +1,4 @@
 { lib, ... }:
 {
-  options.modules.browsers.arduino.enable = lib.mkEnableOption "Arduino IDE";
+  options.modules.editors.arduino.enable = lib.mkEnableOption "Arduino IDE";
 }
