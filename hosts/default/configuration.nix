@@ -124,6 +124,12 @@ in
 
   programs.firefox.enable = true;
 
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    config.common.default = "*";
+  };
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
