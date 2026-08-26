@@ -7,11 +7,22 @@
 
 let
   # Extensions
-  lospecImporter = pkgs.fetchFromGitHub {
-    owner = "JRiggles";
-    repo = "Lospec-Palette-Importer";
-    rev = "v1.6.0";
-    hash = "sha256-wd7Xc49C4Az2U847PJ7FFPfx36qQJaM70cuzLWtjH0Y=";
+  lospecImporter = pkgs.stdenv.mkDerivation {
+    name = "lospec-palette-importer";
+    src = pkgs.fetchFromGitHub {
+      owner = "JRiggles";
+      repo = "Lospec-Palette-Importer";
+      rev = "v1.6.0";
+      hash = "sha256-wd7Xc49C4Az2U847PJ7FFPfx36qQJaM70cuzLWtjH0Y=";
+    };
+    patchPhase = ''
+      # Find the line containing /usr/bin/env, completely wipe it out, and replace it with absolute Nix paths
+      sed -i "s|.*/usr/bin/env.*|command = 'env SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt ${pkgs.curl}/bin/curl -Ls \"' .. url .. '\"'|g" extension/lospec-palette-importer.lua
+    '';
+    installPhase = ''
+      mkdir -p $out
+      cp -r * $out/
+    '';
   };
 
   textureMapGen = pkgs.fetchFromGitHub {
