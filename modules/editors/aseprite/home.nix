@@ -25,11 +25,25 @@ let
     '';
   };
 
-  textureMapGen = pkgs.fetchFromGitHub {
-    owner = "LiTianchu";
-    repo = "aseprite-texture-map-generator";
-    rev = "9bd05f18022173551345af88901f880270a729a3";
-    hash = "sha256-7S1xtV3q2r60eDI+kLj8uAW95CKj3sWB2bQElRTOYgE=";
+  # EaseSprite by JRiggles
+  easeSprite = pkgs.stdenv.mkDerivation {
+    name = "easesprite";
+    src = pkgs.fetchFromGitHub {
+      owner = "JRiggles";
+      repo = "EaseSprite";
+      rev = "main";
+      hash = "sha256-jr/vccBqxW9HYtK6LzaNAyQYwS+KCbIs/DW4HDHHAbg=";
+    };
+    installPhase = ''
+      mkdir -p ${builtins.placeholder "out"}
+
+      # Extract the package.json to the root, no matter the repo structure
+      if [ -d "extension" ]; then
+        cp -r extension/* ${builtins.placeholder "out"}/
+      else
+        cp -r * ${builtins.placeholder "out"}/
+      fi
+    '';
   };
 
   # Scripts
@@ -54,8 +68,8 @@ in
         recursive = true;
       };
 
-      ".config/aseprite/extensions/texture-map-gen" = {
-        source = textureMapGen;
+      ".config/aseprite/extensions/easeSprite" = {
+        source = easeSprite;
         recursive = true;
       };
 
@@ -64,6 +78,8 @@ in
         recursive = true;
       };
 
+      # Directly link the file instead of using writeTextFile!
+      ".config/aseprite/scripts/spatial_ease.lua".source = ./scripts/spatial_ease.lua;
     };
 
   };
