@@ -10,6 +10,7 @@
   modules.services.waybar.enable = false;
   modules.services.swww.enable = true;
   modules.services.wofi.enable = true;
+  modules.services.crossmacro.enable = true;
 
   modules.editors.vscode.enable = true;
   modules.editors.aseprite.enable = true;
