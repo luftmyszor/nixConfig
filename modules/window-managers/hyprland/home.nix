@@ -7,67 +7,30 @@
 
 let
   cfg = config.modules.window-managers.hyprland;
+  paletteBlueprint =
+    builtins.replaceStrings
+      [
+        "__ENABLE_WOFI__"
+        "__ENABLE_PALETTE_SWITCHER__"
+        "__ENABLE_XCURSOR__"
+        "__XCURSOR_SIZE__"
+      ]
+      [
+        (if config.modules.services.wofi.enable then "true" else "false")
+        (if config.modules.themes.palette-switcher.enable then "true" else "false")
+        (if config.modules.themes.xcursor.enable then "true" else "false")
+        (toString config.modules.themes.xcursor.size)
+      ]
+      (builtins.readFile ./configuration/palette-blueprint.lua);
 in
 {
-  imports = [
-    ./configuration/bindings.nix
-    ./configuration/exec.nix
-    ./configuration/dropdownTerm.nix
-    ./configuration/workspace.nix
-  ];
   config = lib.mkIf cfg.enable {
 
     wayland.windowManager.hyprland = {
       enable = true;
       configType = "lua";
-      settings = {
-        misc = {
-          "disable_splash_rendering" = "true";
-          "disable_hyprland_logo" = "true";
-          "vfr" = "true";
-        };
-
-        # Propagate cursor theme to every process Hyprland spawns, including
-        # XWayland clients such as VSCode.  Without these, XWayland apps can't
-        # find the generated theme and fall back to the system default.
-        # ELECTRON_OZONE_PLATFORM_HINT=auto makes Electron apps (VSCode, etc.)
-        # prefer the native Wayland backend over XWayland, so they use the
-        # compositor's cursor directly instead of relying on X11 cursor lookup.
-        # XCURSOR_PATH ensures both the legacy ~/.icons and the XDG
-        # ~/.local/share/icons paths are searched – Chromium/Electron uses its
-        # own cursor lookup that does NOT fall back to XDG paths by default.
-        env =
-          lib.optionals config.modules.themes.xcursor.enable [
-            "XCURSOR_THEME,palette-cursor"
-            "XCURSOR_SIZE,${toString config.modules.themes.xcursor.size}"
-            "XCURSOR_PATH,$HOME/.icons:$HOME/.local/share/icons:/usr/share/icons"
-          ]
-          ++ [
-            "ELECTRON_OZONE_PLATFORM_HINT,auto"
-          ];
-
-        monitor = [
-          "eDP-1, 1920x1200, auto, 1"
-          ", preffered, auto, 1"
-        ];
-
-        workspace = [
-
-        ]
-        ++ (builtins.concatLists (
-          builtins.genList (
-            i:
-            let
-              ws = i + 1;
-            in
-            [
-              "${toString i}"
-            ]
-          ) 9
-        ));
-
-      };
-      extraConfig = builtins.readFile ./configuration/palette-blueprint.lua;
+      settings = { };
+      extraConfig = paletteBlueprint;
 
     };
   };
