@@ -5,7 +5,7 @@ local terminal = "ghostty"
 hl.bind(mod .. " + F", hl.dsp.exec_cmd("firefox"))
 hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd(terminal))
 hl.bind(mod .. " + M", hl.dsp.exit())
-hl.bind(mod .. " + W", hl.dsp.window.kill())
+hl.bind(mod .. " + W", hl.dsp.window.close())
 hl.bind(mod .. " + Tab", hl.dsp.window.cycle_next())
 hl.bind(mod .. " + Tab", hl.dsp.window.bring_to_top())
 hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd([[grim -g "$(slurp)" - | wl-copy]]))

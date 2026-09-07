@@ -18,8 +18,6 @@ hl.workspace_rule({
 -- Dropdown window rules
 hl.window_rule({
     match = { workspace = "special:dropdown" },
-    float = true,
-    pin = true,
 })
 
 -- Toggle dropdown keybinding

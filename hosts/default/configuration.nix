@@ -151,6 +151,9 @@ in
     unzip
     grim
     slurp
+    ripgrep
+    fd
+    nixfmt
   ];
 
   home-manager.useGlobalPkgs = true;

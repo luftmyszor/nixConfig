@@ -16,5 +16,7 @@
   modules.editors.aseprite.enable = true;
   modules.editors.arduino.enable = true;
 
+  modules.dev.antigravity.enable = true;
+
   modules.browsers.zen.enable = true;
 }
