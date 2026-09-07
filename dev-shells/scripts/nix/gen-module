@@ -11,7 +11,7 @@ if [[ "$MODULE_PATH" == "--help" || -z "$MODULE_PATH" ]]; then
     cat <<EOF
 Usage: gen-module <category.path>
 Example:
-  gen-module services.swww
+  gen-module services.awww
   gen-module shells.zsh
 This will create /etc/nixos/modules/<category>/<sub>/<module>/ with options.nix, home.nix, system.nix
 EOF
@@ -57,4 +57,3 @@ for tmpl in "$TEMPLATE_DIR"/*-template.nix; do
 done
 
 echo "Module '$MODULE_NAME' created successfully."
-

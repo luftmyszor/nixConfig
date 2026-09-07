@@ -1,10 +1,10 @@
 { lib, ... }:
 {
-  options.modules.services.swww = {
+  options.modules.services.awww = {
     enable = lib.mkOption {
       type = lib.types.bool;
       default = false;
-      description = "Enable swww wallpaper daemon";
+      description = "Enable awww wallpaper daemon";
     };
     image = lib.mkOption {
       type = lib.types.path;
@@ -13,4 +13,3 @@
     };
   };
 }
-

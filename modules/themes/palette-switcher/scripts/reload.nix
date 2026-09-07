@@ -78,18 +78,18 @@
     reload_wallpaper() {
       local out="$HOME/.local/share/wallpaper.png"
       [[ -f "$out" ]] || return 0
-      if command -v swww > /dev/null 2>&1; then
-        if swww query > /dev/null 2>&1; then
-          if swww img "$out"; then
-            log "Set wallpaper via swww"
+      if command -v awww > /dev/null 2>&1; then
+        if awww query > /dev/null 2>&1; then
+          if awww img "$out"; then
+            log "Set wallpaper via awww"
           else
-            log_err "Failed to set wallpaper via swww"
+            log_err "Failed to set wallpaper via awww"
           fi
         else
-          log "swww not running – skipping wallpaper apply"
+          log "awww not running – skipping wallpaper apply"
         fi
       else
-        log "swww not found – skipping wallpaper apply"
+        log "awww not found – skipping wallpaper apply"
       fi
     }
   '';

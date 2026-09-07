@@ -52,7 +52,7 @@ nixConfig/
 │   │   └── vscode/            # VS Code editor
 │   ├── services/
 │   │   ├── quickshell/        # Quickshell status bar
-│   │   ├── swww/              # Animated wallpaper daemon
+│   │   ├── awww/              # Animated wallpaper daemon
 │   │   ├── waybar/            # Waybar status bar (disabled by default)
 │   │   └── wofi/              # Application launcher
 │   ├── shells/
@@ -147,7 +147,7 @@ modules.terminals.ghostty.enable       = true;
 modules.window-managers.hyprland.enable = true;
 modules.services.quickshell.enable     = true;
 modules.services.waybar.enable         = false; # disabled
-modules.services.swww.enable           = true;
+modules.services.awww.enable           = true;
 modules.services.wofi.enable           = true;
 modules.editors.aseprite.enable        = true;
 modules.editors.vscode.enable          = true;
@@ -181,17 +181,17 @@ modules.editors.vscode.enable          = true;
 
 | File | What it configures |
 |---|---|
-| `bindings.nix` | Keyboard & mouse bindings (`$mod = SUPER`); workspace switching; wofi launcher; volume & brightness media keys |
+| `bindings.nix` | Keyboard & mouse bindings (`SUPER` modifier); workspace switching; wofi launcher; volume & brightness media keys |
 | `exec.nix` | `exec` entries run at startup |
 | `workspace.nix` | Default workspace gaps and layout rules |
-| `dropdownTerm.nix` | `special:dropdown` scratchpad workspace bound to `` $mod+` `` |
+| `dropdownTerm.nix` | `special:dropdown` scratchpad workspace bound to `` SUPER+` `` |
 
 ### Services — `modules/services`
 
 | Module | Option | Description |
 |---|---|---|
 | quickshell | `modules.services.quickshell.enable` | Quickshell-based status bar; config files are copied from `configuration/shell.qml` |
-| swww | `modules.services.swww.enable` | Animated wallpaper daemon (`swww-daemon`) managed as a systemd user service |
+| awww | `modules.services.awww.enable` | Animated wallpaper daemon (`awww-daemon`) managed as a systemd user service |
 | waybar | `modules.services.waybar.enable` | Waybar status bar with a drop-down animation script (`dropWaybar.sh`); **disabled by default** |
 | wofi | `modules.services.wofi.enable` | Wofi application launcher; config and CSS are generated from the active palette |
 
@@ -318,9 +318,9 @@ palette-switch apply
 |---|---|---|
 | **Ghostty** | `~/.config/ghostty/colors.conf` | `pkill -SIGUSR2 ghostty` |
 | **Waybar** | `~/.config/waybar/normal-style.css` | `pkill -SIGUSR2 waybar` |
-| **Hyprland** | `~/.config/hypr/palette-colors.conf` | `hyprctl reload` |
+| **Hyprland** | `~/.config/hypr/hyprland.lua` (blueprint reads `~/nixTheme/palette.{json,css}`) | `hyprctl reload` |
 | **Neovim** | `~/.config/nvim/lua/palette-colors.lua` | Running instances signaled via socket |
-| **Wallpaper** | `~/.local/share/wallpaper.png` | `swww img` (if swww is running) |
+| **Wallpaper** | `~/.local/share/wallpaper.png` | `awww img` (if awww is running) |
 
 ##### Neovim integration
 
@@ -337,12 +337,12 @@ pcall(function() require('palette-colors').apply() end)
 ```bash
 # Place your source image here, then run palette-switch to apply
 cp my-image.png ~/.config/palettes/wallpaper-source.png
-palette-switch wallpaper          # render + apply via swww
+palette-switch wallpaper          # render + apply via awww
 # or switch theme and re-render all at once:
 palette-switch nord
 ```
 
-The rendered wallpaper is saved to `~/.local/share/wallpaper.png` and passed to `swww img` automatically if `swww` is running.
+The rendered wallpaper is saved to `~/.local/share/wallpaper.png` and passed to `awww img` automatically if `awww` is running.
 
 ---
 
@@ -413,7 +413,7 @@ The palette is available as the `palette` argument in any `home.nix` or `system.
 }
 ```
 
-Two pre-generated theme files are written to the user's home directory at build time:
+Two theme files are available at `~/nixTheme/` and refreshed by `palette-switch`:
 - `~/nixTheme/palette.json` — JSON object of all palette keys (for script use)
 - `~/nixTheme/palette.css` — CSS custom properties (`:root { --primary: …; }`) with base `window` and `#input` rules
 

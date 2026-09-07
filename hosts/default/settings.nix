@@ -8,7 +8,7 @@
 
   modules.services.quickshell.enable = true;
   modules.services.waybar.enable = false;
-  modules.services.swww.enable = true;
+  modules.services.awww.enable = true;
   modules.services.wofi.enable = true;
   modules.services.crossmacro.enable = true;
 

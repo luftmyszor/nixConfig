@@ -11,7 +11,7 @@ lib.mkIf cfg.enable {
   wayland.windowManager.hyprland.settings = {
 
     workspace = [
-      "special:dropdown, on-created-empty:$terminal"
+      "special:dropdown, on-created-empty:ghostty"
       "s[true], gapsout:0 0 750 0, gapsin:0, border:false"
     ];
     windowrulev2 = [
@@ -20,7 +20,7 @@ lib.mkIf cfg.enable {
 
     ];
     bind = [
-      "$mod,grave, togglespecialworkspace, special:dropdown"
+      "SUPER,grave, togglespecialworkspace, special:dropdown"
     ];
     animation = [
       "specialWorkspace, 1, 4, default, slidefadevert -50%"

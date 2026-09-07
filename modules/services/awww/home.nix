@@ -1,16 +1,16 @@
 { pkgs, config, lib, ... }:
 {
-  config = lib.mkIf config.modules.services.swww.enable {
-    home.packages = [ pkgs.swww ];
+  config = lib.mkIf config.modules.services.awww.enable {
+    home.packages = [ pkgs.awww ];
 
-    systemd.user.services.swww-daemon = {
+    systemd.user.services.awww-daemon = {
       Unit = {
-        Description = "swww daemon";
+        Description = "awww daemon";
         After = [ "graphical-session.target" ];
       };
 
       Service = {
-        ExecStart = "${pkgs.swww}/bin/swww-daemon";
+        ExecStart = "${pkgs.awww}/bin/awww-daemon";
         Restart = "always";
         RestartSec = 1;
       };
@@ -21,4 +21,3 @@
     };
   };
 }
-
