@@ -34,12 +34,21 @@ local function parse_css(content)
     return palette
 end
 
+local function parse_lua_palette(content)
+    local palette = {}
+    for k, v in content:gmatch('([%w_-]+)%s*=%s*"rgb%((%x+)%)"') do
+        palette[k] = "#" .. v
+    end
+    return palette
+end
+
 function M.load_palette()
     local home = os.getenv("HOME") or ""
     -- Candidate locations for dynamic palette files
     -- Checked in order so dynamic theme-switcher changes take priority,
     -- falling back to the immutable ~/nixTheme outputs.
     local candidates = {
+        { path = home .. "/.config/hypr/palette-colors.lua", parser = parse_lua_palette },
         { path = home .. "/.config/palettes/active.json", parser = parse_json },
         { path = home .. "/.config/theme/palette.json", parser = parse_json },
         { path = home .. "/.cache/theme/current/palette.json", parser = parse_json },

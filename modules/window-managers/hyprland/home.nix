@@ -56,8 +56,16 @@ in
         package.loaded["env"] = nil
 
         local home = os.getenv("HOME") or ""
-        local store_dir = (os.getenv("XDG_CONFIG_HOME") or (home .. "/.config")) .. "/hypr"
-        package.path = store_dir .. "/?.lua;" .. store_dir .. "/?/init.lua;" .. package.path
+        local default_dir = (os.getenv("XDG_CONFIG_HOME") or (home .. "/.config")) .. "/hypr"
+        local config_dir = os.getenv("HYPRLAND_CONFIG_DIR")
+
+        if config_dir and config_dir ~= "" then
+            -- Live prototyping from specified nix config path
+            package.path = config_dir .. "/?.lua;" .. config_dir .. "/?/init.lua;" .. package.path
+        else
+            -- Normal operation using generated files in .config
+            package.path = default_dir .. "/?.lua;" .. default_dir .. "/?/init.lua;" .. package.path
+        end
 
         require("init")
       '';
