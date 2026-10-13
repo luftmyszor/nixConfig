@@ -1,16 +1,31 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+
+let
+  pkg = pkgs.awww;
+  swwwCompat = pkgs.writeShellScriptBin "swww" ''exec ${pkg}/bin/awww "$@"'';
+  swwwDaemonCompat = pkgs.writeShellScriptBin "swww-daemon" ''exec ${pkg}/bin/awww-daemon "$@"'';
+in
 {
   config = lib.mkIf config.modules.services.swww.enable {
-    home.packages = [ pkgs.swww ];
+    home.packages = [
+      pkg
+      swwwCompat
+      swwwDaemonCompat
+    ];
 
     systemd.user.services.swww-daemon = {
       Unit = {
-        Description = "swww daemon";
+        Description = "swww/awww wallpaper daemon";
         After = [ "graphical-session.target" ];
       };
 
       Service = {
-        ExecStart = "${pkgs.swww}/bin/swww-daemon";
+        ExecStart = "${pkg}/bin/awww-daemon";
         Restart = "always";
         RestartSec = 1;
       };
@@ -21,4 +36,3 @@
     };
   };
 }
-

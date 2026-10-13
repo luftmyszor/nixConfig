@@ -78,18 +78,25 @@
     reload_wallpaper() {
       local out="$HOME/.local/share/wallpaper.png"
       [[ -f "$out" ]] || return 0
-      if command -v swww > /dev/null 2>&1; then
-        if swww query > /dev/null 2>&1; then
-          if swww img "$out"; then
-            log "Set wallpaper via swww"
+      local cmd=""
+      if command -v awww > /dev/null 2>&1; then
+        cmd="awww"
+      elif command -v swww > /dev/null 2>&1; then
+        cmd="swww"
+      fi
+
+      if [[ -n "$cmd" ]]; then
+        if "$cmd" query > /dev/null 2>&1; then
+          if "$cmd" img "$out"; then
+            log "Set wallpaper via $cmd"
           else
-            log_err "Failed to set wallpaper via swww"
+            log_err "Failed to set wallpaper via $cmd"
           fi
         else
-          log "swww not running – skipping wallpaper apply"
+          log "$cmd not running – skipping wallpaper apply"
         fi
       else
-        log "swww not found – skipping wallpaper apply"
+        log "Wallpaper daemon CLI (awww/swww) not found – skipping wallpaper apply"
       fi
     }
   '';

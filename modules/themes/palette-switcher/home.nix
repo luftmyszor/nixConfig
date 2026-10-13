@@ -18,20 +18,21 @@ let
   allCatalogueEntries = builtins.readDir catalogueDir;
   nixFiles = builtins.filter (f: lib.hasSuffix ".nix" f) (builtins.attrNames allCatalogueEntries);
 
-  palettes =
-    builtins.listToAttrs (
-      builtins.map (
-        filename:
-        let
-          data = import (catalogueDir + "/${filename}");
-          paletteName = data.name or (lib.removeSuffix ".nix" filename);
-        in
-        {
+  palettes = builtins.listToAttrs (
+    builtins.map (
+      filename:
+      let
+        data = import (catalogueDir + "/${filename}");
+        paletteName = data.name or (lib.removeSuffix ".nix" filename);
+      in
+      {
+        name = paletteName;
+        value = data // {
           name = paletteName;
-          value = data // { name = paletteName; };
-        }
-      ) nixFiles
-    );
+        };
+      }
+    ) nixFiles
+  );
 
   # ── Auto-load scripts from scripts/ ──────────────────────────────────────
   # Every .nix file in the scripts/ subdirectory must return an attrset with:
@@ -41,12 +42,14 @@ let
   # Files are sorted by priority before concatenation so that renders always
   # precede reloads regardless of the alphabetical order of the filenames.
   scriptsDir = ./scripts;
-  scriptFiles = builtins.filter (n: lib.hasSuffix ".nix" n)
-                  (builtins.attrNames (builtins.readDir scriptsDir));
-  loadedScripts = lib.sort (a: b: a.priority < b.priority)
-                    (map (n: import (scriptsDir + "/${n}")) scriptFiles);
+  scriptFiles = builtins.filter (n: lib.hasSuffix ".nix" n) (
+    builtins.attrNames (builtins.readDir scriptsDir)
+  );
+  loadedScripts = lib.sort (a: b: a.priority < b.priority) (
+    map (n: import (scriptsDir + "/${n}")) scriptFiles
+  );
   allFunctions = lib.concatMapStrings (s: s.functions) loadedScripts;
-  allApply     = lib.concatMapStrings (s: s.apply)     loadedScripts;
+  allApply = lib.concatMapStrings (s: s.apply) loadedScripts;
 
   # ── palette-wallpaper script ──────────────────────────────────────────────
   # Takes a PNG file, applies a top-to-bottom gradient (primary→secondary) to
@@ -117,6 +120,9 @@ let
     name = "palette-switch";
     runtimeInputs = [
       pkgs.jq
+      pkgs.librsvg
+      pkgs.xcursorgen
+      pkgs.awww
       paletteWallpaperScript
     ];
     text = ''

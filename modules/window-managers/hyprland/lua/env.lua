@@ -9,7 +9,7 @@ local f = io.open(home .. "/.config/xcursor/config.json", "r")
 if f then
     local content = f:read("*a")
     f:close()
-    local size_match = content:match('"cursorSize"%s*:%s*(%d+)')
+    local size_match = content:match('"size"%s*:%s*(%d+)') or content:match('"cursorSize"%s*:%s*(%d+)')
     if size_match then
         cursor_size = size_match
     end

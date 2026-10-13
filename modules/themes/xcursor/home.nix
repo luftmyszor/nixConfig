@@ -33,9 +33,9 @@ lib.mkIf cfg.enable {
   # the PNG frames into binary XCursor files.  Both must be on PATH when
   # palette-switch runs (they are added to the user's nix-profile PATH here).
   home.packages = [
-    pkgs.librsvg         # provides rsvg-convert
-    pkgs.xorg.xcursorgen # provides xcursorgen
-    pkgs.xorg.xrdb       # provides xrdb (for XWayland cursor theme via X resources)
+    pkgs.librsvg # provides rsvg-convert
+    pkgs.xcursorgen # provides xcursorgen
+    pkgs.xrdb # provides xrdb (for XWayland cursor theme via X resources)
   ];
 
   # ── Deploy base theme assets and the runtime config ───────────────────────
